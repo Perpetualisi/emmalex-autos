@@ -6,7 +6,7 @@ import Equipment from "./components/Equipment";
 import Footer from "./components/Footer";
 import Hero from "./components/Hero";
 import Navbar from "./components/Navbar";
-import RealEstate from "./components/realestate";
+import RealEstate from "./components/Realestate";  // ← Changed to capital R
 
 /* ═══════════════════════════════════════════════════════════
    SCROLL PROGRESS INDICATOR
@@ -93,7 +93,6 @@ const CursorGlow = () => {
 
   return (
     <>
-      {/* Main glow */}
       <div style={{
         position: "fixed",
         pointerEvents: "none",
@@ -106,7 +105,6 @@ const CursorGlow = () => {
         borderRadius: "50%",
         transition: "transform 0.05s ease",
       }} />
-      {/* Small dot */}
       <div style={{
         position: "fixed",
         pointerEvents: "none",
@@ -279,11 +277,9 @@ const useSectionObserver = (sections) => {
    MAIN APP COMPONENT
 ═══════════════════════════════════════════════════════════ */
 function App() {
-  // Section IDs for navigation
   const sections = ["home", "about", "cars", "realestate", "equipment", "contact"];
   const activeSection = useSectionObserver(sections);
 
-  // Smooth scroll handler for anchor links
   useEffect(() => {
     const handleAnchorClick = (e) => {
       const target = e.target.closest('a[href^="#"]');
@@ -304,17 +300,13 @@ function App() {
     return () => document.removeEventListener("click", handleAnchorClick);
   }, []);
 
-  // Keyboard navigation (Arrow keys to navigate sections)
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Ctrl/Cmd + K for quick navigation
       if ((e.ctrlKey || e.metaKey) && e.key === "k") {
         e.preventDefault();
-        // You can implement a command palette here
         console.log("Quick navigation - Command palette would open");
       }
       
-      // Arrow keys for section navigation
       if (e.key === "ArrowDown" || e.key === "ArrowUp") {
         const currentIndex = sections.indexOf(activeSection);
         if (currentIndex !== -1) {
@@ -373,7 +365,6 @@ function App() {
       <Footer />
       <ScrollToTop />
       
-      {/* Global styles */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Overpass+Mono:wght@300;400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
         
@@ -415,7 +406,6 @@ function App() {
           scroll-margin-top: 80px;
         }
         
-        /* Custom scrollbar */
         ::-webkit-scrollbar {
           width: 6px;
           height: 6px;
@@ -434,7 +424,6 @@ function App() {
           background: rgba(198, 168, 75, 0.6);
         }
         
-        /* Reduce motion preference */
         @media (prefers-reduced-motion: reduce) {
           html {
             scroll-behavior: auto;
@@ -445,19 +434,16 @@ function App() {
           }
         }
         
-        /* Focus visible for accessibility */
         :focus-visible {
           outline: 2px solid #C6A84B;
           outline-offset: 2px;
         }
         
-        /* Selection color */
         ::selection {
           background: rgba(198, 168, 75, 0.25);
           color: #C6A84B;
         }
         
-        /* Smooth section transitions */
         section {
           opacity: 0;
           animation: fadeIn 0.6s ease forwards;
