@@ -1,24 +1,22 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    tailwindcss(),
+  ],
   build: {
     outDir: 'dist',
     sourcemap: false,
-    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks: {
-          'vendor': ['react', 'react-dom', 'react/jsx-runtime'],
-          'three': ['three']
+          vendor: ['react', 'react-dom', 'react/jsx-runtime'],
+          three: ['three']
         }
       }
     }
-  },
-  server: {
-    port: 5173,
-    host: true,
   }
 })
