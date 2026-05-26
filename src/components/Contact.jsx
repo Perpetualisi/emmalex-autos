@@ -239,7 +239,7 @@ function makeCompass() {
 }
 
 /* ══════════════════════════════════════════════════
-   ENHANCED 3D SCENE COMPONENT
+   ENHANCED 3D SCENE COMPONENT (OPTIMIZED)
 ══════════════════════════════════════════════════ */
 function ContactScene() {
   const mountRef = useRef(null);
@@ -256,7 +256,7 @@ function ContactScene() {
     if (!mount) return;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     renderer.setClearColor(0x000000, 0);
     renderer.shadowMap.enabled = true;
@@ -325,7 +325,7 @@ function ContactScene() {
     scene.add(grid);
 
     // Floating particles
-    const particleCount = 400;
+    const particleCount = 350;
     const particleGeo = new THREE.BufferGeometry();
     const particlePos = new Float32Array(particleCount * 3);
     for (let i = 0; i < particleCount; i++) {
@@ -500,7 +500,7 @@ const Reticle = ({ accent }) => (
 );
 
 /* ══════════════════════════════════════════════════
-   MAIN CONTACT COMPONENT
+   MAIN CONTACT COMPONENT (WITH MOBILE ZOOM FIX)
 ══════════════════════════════════════════════════ */
 export default function Contact() {
   const [scanY, setScanY] = useState(20);
@@ -725,7 +725,7 @@ export default function Contact() {
           animation:contactPulse 2s ease-in-out infinite;
         }
 
-        /* Form Styles - Mobile Stable */
+        /* Form Styles - Mobile Optimized (No Zoom) */
         .contact-form {
           background:rgba(0,0,0,0.85);
           border:1px solid rgba(255,255,255,0.04);
@@ -772,7 +772,7 @@ export default function Contact() {
           border:1px solid rgba(255,255,255,0.08);
           padding:12px 14px;
           font-family:'Overpass Mono',monospace;
-          font-size:10px;
+          font-size:16px;
           color:#fff;
           transition:all 0.3s;
           box-sizing:border-box;
@@ -781,12 +781,12 @@ export default function Contact() {
           border-radius:0;
         }
         
-        @media(max-width:480px){
+        /* CRITICAL FIX: Prevent zoom on mobile by setting font-size to 16px minimum */
+        @media(max-width:768px){
           .form-group input,
           .form-group select,
           .form-group textarea {
-            padding:10px 12px;
-            font-size:11px;
+            font-size:16px !important;
           }
         }
         
@@ -814,7 +814,7 @@ export default function Contact() {
           border:none;
           padding:14px;
           font-family:'Overpass Mono',monospace;
-          font-size:8.5px;
+          font-size:14px;
           font-weight:600;
           letter-spacing:0.45em;
           text-transform:uppercase;
@@ -827,7 +827,7 @@ export default function Contact() {
         }
         
         @media(max-width:480px){
-          .submit-btn{ padding:12px; font-size:8px; }
+          .submit-btn{ padding:14px; font-size:13px; }
         }
         
         .submit-btn:active {
@@ -846,14 +846,14 @@ export default function Contact() {
           padding:12px 16px;
           text-align:center;
           margin-bottom:20px;
-          font-size:9px;
+          font-size:11px;
           letter-spacing:0.2em;
           color:#25D366;
           animation:contactFadeUp 0.3s ease;
         }
         
         @media(max-width:480px){
-          .success-message{ padding:10px 12px; font-size:8px; margin-bottom:16px; }
+          .success-message{ padding:10px 12px; font-size:10px; margin-bottom:16px; }
         }
 
         /* Contact Cards - Mobile Optimized */
@@ -905,24 +905,24 @@ export default function Contact() {
         
         .contact-card-title {
           font-family:'DM Serif Display',serif;
-          font-size:16px;
+          font-size:18px;
           color:#fff;
           margin-bottom:12px;
         }
         
         @media(max-width:480px){
-          .contact-card-title{ font-size:15px; margin-bottom:10px; }
+          .contact-card-title{ font-size:16px; margin-bottom:10px; }
         }
         
         .contact-card-detail {
-          font-size:8.5px;
+          font-size:11px;
           line-height:1.8;
           color:rgba(255,255,255,0.35);
           letter-spacing:0.03em;
         }
         
         @media(max-width:480px){
-          .contact-card-detail{ font-size:8px; line-height:1.6; }
+          .contact-card-detail{ font-size:10px; line-height:1.6; }
         }
         
         .contact-card-detail div {
@@ -997,8 +997,8 @@ export default function Contact() {
           background:#25D366;
           color:#000;
           border:none;
-          padding:10px 24px;
-          font-size:8px;
+          padding:12px 24px;
+          font-size:10px;
           font-weight:700;
           letter-spacing:0.35em;
           text-transform:uppercase;
@@ -1012,7 +1012,7 @@ export default function Contact() {
         }
         
         @media(max-width:480px){
-          .whatsapp-banner-btn{ padding:10px 20px; font-size:7.5px; }
+          .whatsapp-banner-btn{ padding:12px 20px; font-size:9px; }
         }
         
         .whatsapp-banner-btn:active {
@@ -1027,13 +1027,6 @@ export default function Contact() {
         /* Fix for mobile viewport stability */
         input, select, textarea, button {
           -webkit-tap-highlight-color: transparent;
-        }
-        
-        /* Prevent zoom on input focus for iOS */
-        @media(max-width:480px){
-          input, select, textarea {
-            font-size:16px;
-          }
         }
       `}</style>
 
