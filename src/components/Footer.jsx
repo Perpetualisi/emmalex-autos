@@ -35,7 +35,7 @@ const SOCIAL_LINKS = [
 ];
 
 /* ═══════════════════════════════════════════════════════════
-   3D SCENE COMPONENT - Premium Floating Orbs
+   3D SCENE COMPONENT - Premium Floating Orbs (Optimized)
 ═══════════════════════════════════════════════════════════ */
 function Footer3DScene() {
   const mountRef = useRef(null);
@@ -45,17 +45,22 @@ function Footer3DScene() {
   const particlesRef = useRef(null);
   const orbsRef = useRef([]);
   const timeRef = useRef(0);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    
     const mount = mountRef.current;
     if (!mount) return;
 
-    // Renderer setup
+    // Renderer setup with lower pixel ratio on mobile
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    const pixelRatio = isMobile ? Math.min(window.devicePixelRatio, 1.5) : Math.min(window.devicePixelRatio, 2);
+    renderer.setPixelRatio(pixelRatio);
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     renderer.setClearColor(0x000000, 0);
-    renderer.setPixelRatio(window.devicePixelRatio);
     mount.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
@@ -68,50 +73,46 @@ function Footer3DScene() {
     camera.position.set(0, 0, 8);
     camera.lookAt(0, 0, 0);
 
-    // Ambient light
+    // Lighting system - simplified for mobile
     const ambient = new THREE.AmbientLight(0xffffff, 0.4);
     scene.add(ambient);
     
-    // Main directional light
-    const keyLight = new THREE.DirectionalLight(0xfff8e0, 1.8);
+    const keyLight = new THREE.DirectionalLight(0xfff8e0, 1.5);
     keyLight.position.set(3, 5, 4);
-    keyLight.castShadow = false;
     scene.add(keyLight);
     
-    // Fill light
-    const fillLight = new THREE.PointLight(0x88aaff, 0.6);
+    const fillLight = new THREE.PointLight(0x88aaff, 0.5);
     fillLight.position.set(-2, 1, 3);
     scene.add(fillLight);
     
-    // Gold accent light
-    const goldLight = new THREE.PointLight(0xc6a84b, 0.8);
+    const goldLight = new THREE.PointLight(0xc6a84b, 0.7);
     goldLight.position.set(1, 2, 2);
     scene.add(goldLight);
     
-    // Back rim light
-    const rimLight = new THREE.PointLight(0xffaa66, 0.5);
+    const rimLight = new THREE.PointLight(0xffaa66, 0.4);
     rimLight.position.set(0, 1, -4);
     scene.add(rimLight);
 
-    // Create floating orbs
+    // Create floating orbs (fewer on mobile)
+    const orbCount = isMobile ? 8 : 12;
     const orbColors = [0xc6a84b, 0x5599ff, 0xf5c518, 0xff6688, 0x44cc88];
     const orbs = [];
     
-    for (let i = 0; i < 12; i++) {
-      const size = 0.08 + Math.random() * 0.12;
+    for (let i = 0; i < orbCount; i++) {
+      const size = 0.08 + Math.random() * 0.1;
       const material = new THREE.MeshStandardMaterial({
         color: orbColors[Math.floor(Math.random() * orbColors.length)],
         metalness: 0.85,
         roughness: 0.15,
         emissive: 0x442200,
-        emissiveIntensity: 0.15,
+        emissiveIntensity: 0.12,
       });
       
-      const orb = new THREE.Mesh(new THREE.SphereGeometry(size, 32, 32), material);
+      const orb = new THREE.Mesh(new THREE.SphereGeometry(size, 24, 24), material);
       orb.userData = {
-        speedX: (Math.random() - 0.5) * 0.008,
-        speedY: (Math.random() - 0.5) * 0.008,
-        speedZ: (Math.random() - 0.5) * 0.004,
+        speedX: (Math.random() - 0.5) * 0.006,
+        speedY: (Math.random() - 0.5) * 0.006,
+        speedZ: (Math.random() - 0.5) * 0.003,
         radiusX: 1.5 + Math.random() * 2,
         radiusY: 1 + Math.random() * 1.5,
         radiusZ: 1 + Math.random() * 2,
@@ -124,8 +125,8 @@ function Footer3DScene() {
     }
     orbsRef.current = orbs;
 
-    // Particle system (dust motes)
-    const particleCount = 600;
+    // Particle system - fewer particles on mobile
+    const particleCount = isMobile ? 300 : 500;
     const particleGeo = new THREE.BufferGeometry();
     const particlePositions = new Float32Array(particleCount * 3);
     for (let i = 0; i < particleCount; i++) {
@@ -136,41 +137,47 @@ function Footer3DScene() {
     particleGeo.setAttribute("position", new THREE.BufferAttribute(particlePositions, 3));
     const particleMat = new THREE.PointsMaterial({
       color: 0xc6a84b,
-      size: 0.008,
+      size: 0.007,
       transparent: true,
-      opacity: 0.3,
+      opacity: 0.25,
       blending: THREE.AdditiveBlending,
     });
     const particles = new THREE.Points(particleGeo, particleMat);
     scene.add(particles);
     particlesRef.current = particles;
 
-    // Decorative wireframe rings
-    const ringMaterial = new THREE.MeshBasicMaterial({ color: 0xc6a84b, transparent: true, opacity: 0.12, wireframe: true });
-    const ring1 = new THREE.Mesh(new THREE.TorusGeometry(1.2, 0.02, 32, 100), ringMaterial);
+    // Decorative wireframe rings - fewer on mobile
+    const ringMaterial = new THREE.MeshBasicMaterial({ color: 0xc6a84b, transparent: true, opacity: 0.1, wireframe: true });
+    const ring1 = new THREE.Mesh(new THREE.TorusGeometry(1.2, 0.02, 28, 80), ringMaterial);
     ring1.rotation.x = Math.PI / 2;
     scene.add(ring1);
     
-    const ring2 = new THREE.Mesh(new THREE.TorusGeometry(1.8, 0.015, 32, 120), ringMaterial);
+    const ring2 = new THREE.Mesh(new THREE.TorusGeometry(1.8, 0.015, 28, 100), ringMaterial);
     ring2.rotation.z = Math.PI / 3;
     ring2.rotation.x = Math.PI / 4;
     scene.add(ring2);
     
-    const ring3 = new THREE.Mesh(new THREE.TorusGeometry(2.4, 0.01, 32, 140), ringMaterial);
-    ring3.rotation.x = Math.PI / 3;
-    ring3.rotation.z = Math.PI / 6;
-    scene.add(ring3);
+    if (!isMobile) {
+      const ring3 = new THREE.Mesh(new THREE.TorusGeometry(2.4, 0.01, 28, 120), ringMaterial);
+      ring3.rotation.x = Math.PI / 3;
+      ring3.rotation.z = Math.PI / 6;
+      scene.add(ring3);
+    }
 
-    // Mouse interaction
+    // Mouse interaction (desktop only)
     let mouseX = 0, mouseY = 0;
     let targetRotationX = 0, targetRotationY = 0;
     
-    const onMouseMove = (e) => {
-      const rect = mount.getBoundingClientRect();
-      mouseX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
-      mouseY = -((e.clientY - rect.top) / rect.height - 0.5) * 2;
-    };
-    mount.addEventListener("mousemove", onMouseMove);
+    if (!isMobile) {
+      const onMouseMove = (e) => {
+        const rect = mount.getBoundingClientRect();
+        mouseX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+        mouseY = -((e.clientY - rect.top) / rect.height - 0.5) * 2;
+      };
+      mount.addEventListener("mousemove", onMouseMove);
+      
+      return () => mount.removeEventListener("mousemove", onMouseMove);
+    }
 
     // Animation loop
     let time = 0;
@@ -179,12 +186,14 @@ function Footer3DScene() {
       time += 0.016;
       timeRef.current = time;
       
-      // Smooth camera rotation based on mouse
-      targetRotationX += (mouseY * 0.3 - targetRotationX) * 0.05;
-      targetRotationY += (mouseX * 0.5 - targetRotationY) * 0.05;
-      camera.position.x += (targetRotationY * 1.5 - camera.position.x) * 0.05;
-      camera.position.y += (targetRotationX * 1.2 - camera.position.y) * 0.05;
-      camera.lookAt(0, 0, 0);
+      // Smooth camera rotation based on mouse (desktop only)
+      if (!isMobile) {
+        targetRotationX += (mouseY * 0.3 - targetRotationX) * 0.05;
+        targetRotationY += (mouseX * 0.5 - targetRotationY) * 0.05;
+        camera.position.x += (targetRotationY * 1.5 - camera.position.x) * 0.05;
+        camera.position.y += (targetRotationX * 1.2 - camera.position.y) * 0.05;
+        camera.lookAt(0, 0, 0);
+      }
       
       // Animate orbs
       orbs.forEach((orb, idx) => {
@@ -197,27 +206,26 @@ function Footer3DScene() {
         orb.position.y = Math.cos(data.angleY) * data.radiusY;
         orb.position.z = Math.sin(data.angleZ) * data.radiusZ;
         
-        // Pulsing scale
-        const scale = 1 + Math.sin(time * 2 + idx) * 0.15;
+        const scale = 1 + Math.sin(time * 2 + idx) * 0.12;
         orb.scale.set(scale, scale, scale);
       });
       
       // Animate particles
       if (particlesRef.current) {
-        particlesRef.current.rotation.y = time * 0.02;
-        particlesRef.current.rotation.x = Math.sin(time * 0.1) * 0.1;
+        particlesRef.current.rotation.y = time * 0.015;
+        particlesRef.current.rotation.x = Math.sin(time * 0.08) * 0.08;
       }
       
       // Animate rings
       ring1.rotation.z += 0.002;
-      ring2.rotation.x += 0.0015;
+      ring2.rotation.x += 0.001;
       ring2.rotation.y += 0.001;
-      ring3.rotation.x -= 0.001;
-      ring3.rotation.z += 0.002;
+      if (ring2) ring2.rotation.x += 0.001;
+      if (ring1) ring1.rotation.z += 0.002;
       
       // Pulsing lights
-      goldLight.intensity = 0.7 + Math.sin(time * 1.5) * 0.2;
-      rimLight.intensity = 0.4 + Math.cos(time * 1.2) * 0.15;
+      goldLight.intensity = 0.6 + Math.sin(time * 1.5) * 0.15;
+      rimLight.intensity = 0.35 + Math.cos(time * 1.2) * 0.1;
       
       renderer.render(scene, camera);
     };
@@ -239,7 +247,6 @@ function Footer3DScene() {
     return () => {
       cancelAnimationFrame(frameRef.current);
       resizeObserver.disconnect();
-      mount.removeEventListener("mousemove", onMouseMove);
       
       if (sceneRef.current) {
         sceneRef.current.traverse(obj => {
@@ -250,7 +257,7 @@ function Footer3DScene() {
       if (rendererRef.current) rendererRef.current.dispose();
       if (mount.contains(rendererRef.current?.domElement)) mount.removeChild(rendererRef.current.domElement);
     };
-  }, []);
+  }, [isMobile]);
 
   return <div ref={mountRef} style={{ width: "100%", height: "100%", position: "absolute", inset: 0 }} />;
 }
@@ -259,21 +266,21 @@ function Footer3DScene() {
    SVG DECORATIONS
 ═══════════════════════════════════════════════════════════ */
 const CornerTL = ({ accent }) => (
-  <svg width="40" height="40" viewBox="0 0 40 40" fill="none" style={{ position: "absolute", top: 0, left: 0, opacity: 0.35, pointerEvents: "none", zIndex: 10 }}>
-    <path d="M0 40 L0 0 L40 0" stroke={accent} strokeWidth="0.8" fill="none"/>
-    <circle cx="0" cy="0" r="2.5" fill={accent} opacity="0.8"/>
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" style={{ position: "absolute", top: 0, left: 0, opacity: 0.3, pointerEvents: "none", zIndex: 10 }}>
+    <path d="M0 32 L0 0 L32 0" stroke={accent} strokeWidth="0.7" fill="none"/>
+    <circle cx="0" cy="0" r="2" fill={accent} opacity="0.7"/>
   </svg>
 );
 
 const CornerBR = ({ accent }) => (
-  <svg width="40" height="40" viewBox="0 0 40 40" fill="none" style={{ position: "absolute", bottom: 0, right: 0, opacity: 0.35, pointerEvents: "none", zIndex: 10 }}>
-    <path d="M40 0 L40 40 L0 40" stroke={accent} strokeWidth="0.8" fill="none"/>
-    <circle cx="40" cy="40" r="2.5" fill={accent} opacity="0.8"/>
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" style={{ position: "absolute", bottom: 0, right: 0, opacity: 0.3, pointerEvents: "none", zIndex: 10 }}>
+    <path d="M32 0 L32 32 L0 32" stroke={accent} strokeWidth="0.7" fill="none"/>
+    <circle cx="32" cy="32" r="2" fill={accent} opacity="0.7"/>
   </svg>
 );
 
 /* ═══════════════════════════════════════════════════════════
-   NEWSLETTER SIGNUP
+   NEWSLETTER SIGNUP (Mobile Responsive)
 ═══════════════════════════════════════════════════════════ */
 function NewsletterSignup() {
   const [email, setEmail] = useState("");
@@ -282,7 +289,6 @@ function NewsletterSignup() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (email) {
-      // Open WhatsApp with newsletter inquiry
       const waMsg = `Hello Emmalex! I'm interested in your newsletter and updates. My email is ${email}`;
       window.open(`${WA_URL}?text=${encodeURIComponent(waMsg)}`, "_blank");
       setSubscribed(true);
@@ -292,22 +298,22 @@ function NewsletterSignup() {
   };
   
   return (
-    <div style={{ marginTop: "var(--space-xl)" }}>
+    <div style={{ marginTop: "24px" }}>
       <h4 style={{
-        fontFamily: "var(--font-mono)",
-        fontSize: "8px",
+        fontFamily: "'Overpass Mono', monospace",
+        fontSize: "clamp(7px, 3vw, 8px)",
         fontWeight: 600,
-        letterSpacing: "0.45em",
+        letterSpacing: "0.4em",
         textTransform: "uppercase",
-        color: "var(--brand-gold)",
-        marginBottom: "var(--space-md)",
+        color: "#C6A84B",
+        marginBottom: "12px",
       }}>
         Newsletter
       </h4>
       <p style={{
-        fontSize: "10px",
-        color: "var(--text-tertiary)",
-        marginBottom: "var(--space-md)",
+        fontSize: "clamp(9px, 3vw, 10px)",
+        color: "rgba(255,255,255,0.3)",
+        marginBottom: "12px",
         lineHeight: 1.6,
       }}>
         Subscribe for exclusive offers and updates.
@@ -315,17 +321,17 @@ function NewsletterSignup() {
       
       {subscribed ? (
         <div style={{
-          background: "rgba(37,211,102,0.15)",
+          background: "rgba(37,211,102,0.12)",
           border: "1px solid rgba(37,211,102,0.3)",
-          padding: "12px",
+          padding: "10px",
           textAlign: "center",
-          fontSize: "9px",
+          fontSize: "clamp(8px, 3vw, 9px)",
           color: "#25D366",
         }}>
           ✓ WhatsApp opened! Send your email to subscribe.
         </div>
       ) : (
-        <form onSubmit={handleSubmit} style={{ display: "flex", gap: "8px" }}>
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           <input
             type="email"
             placeholder="your@email.com"
@@ -333,15 +339,15 @@ function NewsletterSignup() {
             onChange={(e) => setEmail(e.target.value)}
             required
             style={{
-              flex: 1,
+              width: "100%",
               background: "rgba(255,255,255,0.03)",
               border: "1px solid rgba(255,255,255,0.08)",
-              padding: "12px 14px",
-              fontFamily: "var(--font-mono)",
-              fontSize: "9px",
+              padding: "10px 12px",
+              fontFamily: "'Overpass Mono', monospace",
+              fontSize: "clamp(10px, 3.5vw, 11px)",
               color: "#fff",
               outline: "none",
-              transition: "all 0.3s",
+              boxSizing: "border-box",
             }}
             onFocus={(e) => e.target.style.borderColor = "#C6A84B"}
             onBlur={(e) => e.target.style.borderColor = "rgba(255,255,255,0.08)"}
@@ -349,20 +355,19 @@ function NewsletterSignup() {
           <button
             type="submit"
             style={{
-              background: "var(--brand-gold)",
+              background: "#C6A84B",
               border: "none",
-              padding: "0 18px",
-              fontFamily: "var(--font-mono)",
-              fontSize: "8px",
+              padding: "10px",
+              fontFamily: "'Overpass Mono', monospace",
+              fontSize: "clamp(7px, 3vw, 8px)",
               fontWeight: 600,
               letterSpacing: "0.35em",
               textTransform: "uppercase",
               color: "#000",
               cursor: "pointer",
               transition: "all 0.3s",
+              width: "100%",
             }}
-            onMouseEnter={(e) => e.currentTarget.style.filter = "brightness(1.1)"}
-            onMouseLeave={(e) => e.currentTarget.style.filter = "brightness(1)"}
           >
             Send
           </button>
@@ -373,17 +378,25 @@ function NewsletterSignup() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   MAIN FOOTER COMPONENT
+   MAIN FOOTER COMPONENT (Mobile Responsive)
 ═══════════════════════════════════════════════════════════ */
 export default function Footer() {
   const [scanY, setScanY] = useState(20);
   const [hoveredSocial, setHoveredSocial] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
   
   useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    
     let y = 20, raf;
     const tick = () => { y = (y + 0.05) % 100; setScanY(y); raf = requestAnimationFrame(tick); };
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", checkMobile);
+    };
   }, []);
 
   return (
@@ -391,7 +404,7 @@ export default function Footer() {
       background: "#000",
       position: "relative",
       overflow: "hidden",
-      fontFamily: "var(--font-sans)",
+      fontFamily: "'Inter', sans-serif",
       borderTop: "1px solid rgba(255,255,255,0.04)",
     }}>
       {/* Animated scan line */}
@@ -400,8 +413,8 @@ export default function Footer() {
         inset: 0,
         pointerEvents: "none",
         zIndex: 1,
-        background: "linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.008) 50%, transparent 100%)",
-        backgroundSize: "100% 220px",
+        background: "linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.006) 50%, transparent 100%)",
+        backgroundSize: "100% 200px",
         animation: "footerScanMove 9s linear infinite",
       }} />
       
@@ -411,8 +424,8 @@ export default function Footer() {
         left: 0,
         right: 0,
         top: `${scanY}%`,
-        height: "60px",
-        background: "linear-gradient(to bottom, transparent, rgba(198,168,75,0.04), transparent)",
+        height: "50px",
+        background: "linear-gradient(to bottom, transparent, rgba(198,168,75,0.03), transparent)",
         pointerEvents: "none",
         zIndex: 2,
       }} />
@@ -421,11 +434,6 @@ export default function Footer() {
         @keyframes footerScanMove {
           from { background-position: 0 -200px; }
           to { background-position: 0 100%; }
-        }
-        
-        @keyframes footerFloat {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-5px); }
         }
         
         .footer-link-hover {
@@ -440,7 +448,7 @@ export default function Footer() {
           left: 0;
           width: 0;
           height: 1px;
-          background: var(--brand-gold);
+          background: #C6A84B;
           transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
@@ -453,8 +461,16 @@ export default function Footer() {
           cursor: pointer;
         }
         
-        .social-icon:hover {
-          transform: translateY(-3px);
+        @media (max-width: 768px) {
+          .footer-grid {
+            gap: 32px !important;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .footer-link-hover::after {
+            display: none;
+          }
         }
       `}</style>
       
@@ -463,7 +479,7 @@ export default function Footer() {
         position: "absolute",
         inset: 0,
         zIndex: 0,
-        opacity: 0.35,
+        opacity: 0.3,
       }}>
         <Footer3DScene />
       </div>
@@ -474,49 +490,51 @@ export default function Footer() {
         zIndex: 5,
         maxWidth: "1400px",
         margin: "0 auto",
-        padding: "clamp(48px, 8vw, 80px) 5% 40px",
+        padding: "clamp(40px, 8vw, 70px) 5% 30px",
       }}>
         
         {/* Top Section - Logo + Description */}
         <div style={{
           display: "grid",
-          gridTemplateColumns: "1.5fr 1fr 1fr 1fr",
-          gap: "clamp(32px, 5vw, 60px)",
-          marginBottom: "clamp(40px, 6vw, 60px)",
+          gridTemplateColumns: isMobile ? "1fr" : "1.5fr 1fr 1fr 1fr",
+          gap: "clamp(30px, 5vw, 50px)",
+          marginBottom: "clamp(30px, 6vw, 50px)",
         }} className="footer-grid">
           
           {/* Brand Column */}
-          <div>
+          <div style={{ textAlign: isMobile ? "center" : "left" }}>
             <div style={{
-              fontFamily: "var(--font-serif)",
-              fontSize: "clamp(24px, 4vw, 32px)",
-              color: "var(--brand-gold)",
+              fontFamily: "'DM Serif Display', serif",
+              fontSize: "clamp(28px, 6vw, 36px)",
+              color: "#C6A84B",
               letterSpacing: "-0.01em",
-              marginBottom: "var(--space-md)",
+              marginBottom: "12px",
             }}>
               Emmalex<span style={{ color: "#fff", fontWeight: 300 }}>.</span>
             </div>
             <p style={{
-              fontSize: "10px",
-              color: "var(--text-tertiary)",
-              lineHeight: 1.8,
-              marginBottom: "var(--space-lg)",
-              maxWidth: "280px",
+              fontSize: "clamp(9px, 3vw, 10px)",
+              color: "rgba(255,255,255,0.3)",
+              lineHeight: 1.7,
+              marginBottom: "20px",
+              maxWidth: isMobile ? "100%" : "280px",
+              marginLeft: isMobile ? "auto" : 0,
+              marginRight: isMobile ? "auto" : 0,
             }}>
               Premium vehicles, prime real estate, and heavy equipment leasing — serving Nigeria with excellence since 2022.
             </p>
             
             {/* Trust Badges */}
-            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start" }}>
               {["✓ Verified", "✓ Trusted", "✓ Licensed"].map((badge) => (
                 <div key={badge} style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: "6.5px",
+                  fontFamily: "'Overpass Mono', monospace",
+                  fontSize: "clamp(5px, 2.5vw, 6.5px)",
                   fontWeight: 600,
-                  letterSpacing: "0.3em",
+                  letterSpacing: "0.25em",
                   textTransform: "uppercase",
-                  color: "rgba(198,168,75,0.6)",
-                  border: "1px solid rgba(198,168,75,0.15)",
+                  color: "rgba(198,168,75,0.5)",
+                  border: "1px solid rgba(198,168,75,0.12)",
                   padding: "4px 8px",
                 }}>
                   {badge}
@@ -526,32 +544,30 @@ export default function Footer() {
           </div>
           
           {/* Company Links */}
-          <div>
+          <div style={{ textAlign: isMobile ? "center" : "left" }}>
             <h4 style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "8px",
+              fontFamily: "'Overpass Mono', monospace",
+              fontSize: "clamp(7px, 3vw, 8px)",
               fontWeight: 600,
-              letterSpacing: "0.45em",
+              letterSpacing: "0.4em",
               textTransform: "uppercase",
-              color: "var(--brand-gold)",
-              marginBottom: "var(--space-lg)",
+              color: "#C6A84B",
+              marginBottom: "16px",
             }}>
               Company
             </h4>
-            <ul style={{ listStyle: "none" }}>
+            <ul style={{ listStyle: "none", padding: 0 }}>
               {FOOTER_LINKS.company.map((link) => (
-                <li key={link.name} style={{ marginBottom: "var(--space-sm)" }}>
+                <li key={link.name} style={{ marginBottom: "10px" }}>
                   <a
                     href={link.href}
                     className="footer-link-hover"
                     style={{
-                      fontSize: "10px",
-                      color: "var(--text-tertiary)",
+                      fontSize: "clamp(9px, 3vw, 10px)",
+                      color: "rgba(255,255,255,0.4)",
                       textDecoration: "none",
                       transition: "color 0.3s",
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.color = "#C6A84B"}
-                    onMouseLeave={(e) => e.currentTarget.style.color = ""}
                   >
                     {link.name}
                   </a>
@@ -561,32 +577,30 @@ export default function Footer() {
           </div>
           
           {/* Services Links */}
-          <div>
+          <div style={{ textAlign: isMobile ? "center" : "left" }}>
             <h4 style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "8px",
+              fontFamily: "'Overpass Mono', monospace",
+              fontSize: "clamp(7px, 3vw, 8px)",
               fontWeight: 600,
-              letterSpacing: "0.45em",
+              letterSpacing: "0.4em",
               textTransform: "uppercase",
-              color: "var(--brand-gold)",
-              marginBottom: "var(--space-lg)",
+              color: "#C6A84B",
+              marginBottom: "16px",
             }}>
               Services
             </h4>
-            <ul style={{ listStyle: "none" }}>
+            <ul style={{ listStyle: "none", padding: 0 }}>
               {FOOTER_LINKS.services.map((link) => (
-                <li key={link.name} style={{ marginBottom: "var(--space-sm)" }}>
+                <li key={link.name} style={{ marginBottom: "10px" }}>
                   <a
                     href={link.href}
                     className="footer-link-hover"
                     style={{
-                      fontSize: "10px",
-                      color: "var(--text-tertiary)",
+                      fontSize: "clamp(9px, 3vw, 10px)",
+                      color: "rgba(255,255,255,0.4)",
                       textDecoration: "none",
                       transition: "color 0.3s",
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.color = "#C6A84B"}
-                    onMouseLeave={(e) => e.currentTarget.style.color = ""}
                   >
                     {link.name}
                   </a>
@@ -596,32 +610,30 @@ export default function Footer() {
           </div>
           
           {/* Support + Newsletter */}
-          <div>
+          <div style={{ textAlign: isMobile ? "center" : "left" }}>
             <h4 style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "8px",
+              fontFamily: "'Overpass Mono', monospace",
+              fontSize: "clamp(7px, 3vw, 8px)",
               fontWeight: 600,
-              letterSpacing: "0.45em",
+              letterSpacing: "0.4em",
               textTransform: "uppercase",
-              color: "var(--brand-gold)",
-              marginBottom: "var(--space-lg)",
+              color: "#C6A84B",
+              marginBottom: "16px",
             }}>
               Support
             </h4>
-            <ul style={{ listStyle: "none", marginBottom: "var(--space-xl)" }}>
+            <ul style={{ listStyle: "none", padding: 0, marginBottom: "20px" }}>
               {FOOTER_LINKS.support.map((link) => (
-                <li key={link.name} style={{ marginBottom: "var(--space-sm)" }}>
+                <li key={link.name} style={{ marginBottom: "10px" }}>
                   <a
                     href={link.href}
                     className="footer-link-hover"
                     style={{
-                      fontSize: "10px",
-                      color: "var(--text-tertiary)",
+                      fontSize: "clamp(9px, 3vw, 10px)",
+                      color: "rgba(255,255,255,0.4)",
                       textDecoration: "none",
                       transition: "color 0.3s",
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.color = "#C6A84B"}
-                    onMouseLeave={(e) => e.currentTarget.style.color = ""}
                   >
                     {link.name}
                   </a>
@@ -636,74 +648,80 @@ export default function Footer() {
         {/* Middle Section - Contact Info + Social */}
         <div style={{
           display: "flex",
+          flexDirection: isMobile ? "column" : "row",
           justifyContent: "space-between",
           alignItems: "center",
-          flexWrap: "wrap",
-          gap: "var(--space-lg)",
-          padding: "var(--space-xl) 0",
+          gap: "20px",
+          padding: "30px 0",
           borderTop: "1px solid rgba(255,255,255,0.04)",
           borderBottom: "1px solid rgba(255,255,255,0.04)",
-          marginBottom: "var(--space-xl)",
+          marginBottom: "30px",
         }}>
-          {/* Contact Info - UPDATED */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--space-xl)" }}>
-            <div>
+          {/* Contact Info */}
+          <div style={{ 
+            display: "flex", 
+            flexDirection: isMobile ? "column" : "row", 
+            flexWrap: "wrap", 
+            gap: isMobile ? "16px" : "30px",
+            alignItems: isMobile ? "center" : "flex-start",
+            width: isMobile ? "100%" : "auto",
+          }}>
+            <div style={{ textAlign: isMobile ? "center" : "left" }}>
               <span style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "7px",
-                letterSpacing: "0.35em",
+                fontFamily: "'Overpass Mono', monospace",
+                fontSize: "clamp(6px, 2.5vw, 7px)",
+                letterSpacing: "0.3em",
                 textTransform: "uppercase",
-                color: "var(--text-muted)",
+                color: "rgba(255,255,255,0.35)",
                 display: "block",
-                marginBottom: "var(--space-sm)",
+                marginBottom: "6px",
               }}>
                 Phone / WhatsApp
               </span>
               <a href={`tel:${CONTACT_PHONE.replace(/\s/g, "")}`} style={{
-                fontSize: "11px",
-                color: "var(--text-secondary)",
+                fontSize: "clamp(10px, 3.5vw, 11px)",
+                color: "rgba(255,255,255,0.5)",
                 textDecoration: "none",
-                transition: "color 0.3s",
-              }} onMouseEnter={(e) => e.currentTarget.style.color = "#C6A84B"} onMouseLeave={(e) => e.currentTarget.style.color = ""}>
+              }}>
                 {CONTACT_PHONE}
               </a>
             </div>
             
-            <div>
+            <div style={{ textAlign: isMobile ? "center" : "left" }}>
               <span style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "7px",
-                letterSpacing: "0.35em",
+                fontFamily: "'Overpass Mono', monospace",
+                fontSize: "clamp(6px, 2.5vw, 7px)",
+                letterSpacing: "0.3em",
                 textTransform: "uppercase",
-                color: "var(--text-muted)",
+                color: "rgba(255,255,255,0.35)",
                 display: "block",
-                marginBottom: "var(--space-sm)",
+                marginBottom: "6px",
               }}>
                 Email
               </span>
               <a href={`mailto:${CONTACT_EMAIL}`} style={{
-                fontSize: "11px",
-                color: "var(--text-secondary)",
+                fontSize: "clamp(10px, 3.5vw, 11px)",
+                color: "rgba(255,255,255,0.5)",
                 textDecoration: "none",
-                transition: "color 0.3s",
-              }} onMouseEnter={(e) => e.currentTarget.style.color = "#C6A84B"} onMouseLeave={(e) => e.currentTarget.style.color = ""}>
+                wordBreak: "break-all",
+              }}>
                 {CONTACT_EMAIL}
               </a>
             </div>
             
-            <div>
+            <div style={{ textAlign: isMobile ? "center" : "left" }}>
               <span style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "7px",
-                letterSpacing: "0.35em",
+                fontFamily: "'Overpass Mono', monospace",
+                fontSize: "clamp(6px, 2.5vw, 7px)",
+                letterSpacing: "0.3em",
                 textTransform: "uppercase",
-                color: "var(--text-muted)",
+                color: "rgba(255,255,255,0.35)",
                 display: "block",
-                marginBottom: "var(--space-sm)",
+                marginBottom: "6px",
               }}>
                 Location
               </span>
-              <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
+              <span style={{ fontSize: "clamp(10px, 3.5vw, 11px)", color: "rgba(255,255,255,0.5)" }}>
                 {LOCATION}
               </span>
             </div>
@@ -717,28 +735,22 @@ export default function Footer() {
             style={{
               display: "inline-flex",
               alignItems: "center",
+              justifyContent: "center",
               gap: "8px",
               background: "rgba(37,211,102,0.1)",
               border: "1px solid rgba(37,211,102,0.3)",
               padding: "10px 20px",
-              fontSize: "8px",
+              fontSize: "clamp(7px, 2.5vw, 8px)",
               fontWeight: 600,
-              letterSpacing: "0.35em",
+              letterSpacing: "0.3em",
               textTransform: "uppercase",
               color: "#25D366",
               textDecoration: "none",
               transition: "all 0.3s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "rgba(37,211,102,0.2)";
-              e.currentTarget.style.transform = "translateY(-2px)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "rgba(37,211,102,0.1)";
-              e.currentTarget.style.transform = "translateY(0)";
+              width: isMobile ? "100%" : "auto",
             }}
           >
-            <span style={{ fontSize: "14px" }}>💬</span>
+            <span style={{ fontSize: "clamp(12px, 4vw, 14px)" }}>💬</span>
             Chat on WhatsApp
           </a>
         </div>
@@ -746,13 +758,13 @@ export default function Footer() {
         {/* Bottom Section - Social + Copyright */}
         <div style={{
           display: "flex",
+          flexDirection: isMobile ? "column-reverse" : "row",
           justifyContent: "space-between",
           alignItems: "center",
-          flexWrap: "wrap",
-          gap: "var(--space-md)",
+          gap: "16px",
         }}>
           {/* Social Links */}
-          <div style={{ display: "flex", gap: "var(--space-md)" }}>
+          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", justifyContent: "center" }}>
             {SOCIAL_LINKS.map((social) => (
               <a
                 key={social.name}
@@ -764,15 +776,15 @@ export default function Footer() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  width: "36px",
-                  height: "36px",
+                  width: "clamp(32px, 8vw, 36px)",
+                  height: "clamp(32px, 8vw, 36px)",
                   background: "rgba(255,255,255,0.03)",
                   border: "1px solid rgba(255,255,255,0.06)",
                   borderRadius: "50%",
-                  fontSize: "16px",
+                  fontSize: "clamp(14px, 4vw, 16px)",
                   textDecoration: "none",
                   transition: "all 0.3s",
-                  color: hoveredSocial === social.name ? social.color : "rgba(255,255,255,0.4)",
+                  color: hoveredSocial === social.name ? social.color : "rgba(255,255,255,0.35)",
                 }}
                 onMouseEnter={() => setHoveredSocial(social.name)}
                 onMouseLeave={() => setHoveredSocial(null)}
@@ -784,13 +796,13 @@ export default function Footer() {
           
           {/* Copyright */}
           <div style={{
-            fontSize: "8px",
-            letterSpacing: "0.35em",
+            fontSize: "clamp(6px, 2.5vw, 8px)",
+            letterSpacing: "0.3em",
             textTransform: "uppercase",
-            color: "var(--text-muted)",
+            color: "rgba(255,255,255,0.25)",
             textAlign: "center",
           }}>
-            © {CURRENT_YEAR} Emmalex Autos & Logistics. Port Harcourt, Nigeria.
+            © {CURRENT_YEAR} Emmalex Autos & Logistics. PH, Nigeria.
           </div>
           
           {/* Back to Top Button */}
@@ -800,22 +812,14 @@ export default function Footer() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              width: "36px",
-              height: "36px",
+              width: "clamp(32px, 8vw, 36px)",
+              height: "clamp(32px, 8vw, 36px)",
               background: "rgba(198,168,75,0.1)",
               border: "1px solid rgba(198,168,75,0.2)",
               borderRadius: "50%",
               cursor: "pointer",
               transition: "all 0.3s",
-              fontSize: "14px",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "rgba(198,168,75,0.2)";
-              e.currentTarget.style.transform = "translateY(-2px)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "rgba(198,168,75,0.1)";
-              e.currentTarget.style.transform = "translateY(0)";
+              fontSize: "clamp(12px, 4vw, 14px)",
             }}
           >
             ↑
@@ -834,7 +838,7 @@ export default function Footer() {
         left: 0,
         right: 0,
         height: "1px",
-        background: "linear-gradient(90deg, transparent, rgba(198,168,75,0.3), transparent)",
+        background: "linear-gradient(90deg, transparent, rgba(198,168,75,0.25), transparent)",
       }} />
     </footer>
   );
