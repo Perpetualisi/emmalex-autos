@@ -2,18 +2,19 @@ import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 
 /* ═══════════════════════════════════════════════════════════
-   CONSTANTS
+   CONSTANTS - UPDATED CONTACT INFO
 ═══════════════════════════════════════════════════════════ */
 const CURRENT_YEAR = new Date().getFullYear();
 const WA_NUMBER = "2347034627308";
 const WA_URL = `https://wa.me/${WA_NUMBER}`;
+const CONTACT_EMAIL = "ehiawaguanemmanuel@gmail.com";
+const CONTACT_PHONE = "+234 703 462 7308";
+const LOCATION = "Port Harcourt, Nigeria";
 
 const FOOTER_LINKS = {
   company: [
     { name: "About Us", href: "#about" },
     { name: "Our Services", href: "#services" },
-    { name: "Careers", href: "#careers" },
-    { name: "Press", href: "#press" },
   ],
   services: [
     { name: "Vehicles", href: "#cars" },
@@ -22,10 +23,7 @@ const FOOTER_LINKS = {
     { name: "Leasing", href: "#leasing" },
   ],
   support: [
-    { name: "Help Center", href: "#help" },
     { name: "Contact Us", href: "#contact" },
-    { name: "Privacy Policy", href: "#privacy" },
-    { name: "Terms of Service", href: "#terms" },
   ],
 };
 
@@ -34,7 +32,6 @@ const SOCIAL_LINKS = [
   { name: "Facebook", icon: "📘", url: "https://facebook.com", color: "#1877F2" },
   { name: "Twitter", icon: "🐦", url: "https://twitter.com", color: "#1DA1F2" },
   { name: "LinkedIn", icon: "🔗", url: "https://linkedin.com", color: "#0A66C2" },
-  { name: "YouTube", icon: "📺", url: "https://youtube.com", color: "#FF0000" },
 ];
 
 /* ═══════════════════════════════════════════════════════════
@@ -285,8 +282,9 @@ function NewsletterSignup() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (email) {
-      // In production, send to your API
-      console.log("Newsletter signup:", email);
+      // Open WhatsApp with newsletter inquiry
+      const waMsg = `Hello Emmalex! I'm interested in your newsletter and updates. My email is ${email}`;
+      window.open(`${WA_URL}?text=${encodeURIComponent(waMsg)}`, "_blank");
       setSubscribed(true);
       setTimeout(() => setSubscribed(false), 3000);
       setEmail("");
@@ -324,7 +322,7 @@ function NewsletterSignup() {
           fontSize: "9px",
           color: "#25D366",
         }}>
-          ✓ Subscribed successfully!
+          ✓ WhatsApp opened! Send your email to subscribe.
         </div>
       ) : (
         <form onSubmit={handleSubmit} style={{ display: "flex", gap: "8px" }}>
@@ -647,7 +645,7 @@ export default function Footer() {
           borderBottom: "1px solid rgba(255,255,255,0.04)",
           marginBottom: "var(--space-xl)",
         }}>
-          {/* Contact Info */}
+          {/* Contact Info - UPDATED */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--space-xl)" }}>
             <div>
               <span style={{
@@ -659,15 +657,15 @@ export default function Footer() {
                 display: "block",
                 marginBottom: "var(--space-sm)",
               }}>
-                Phone
+                Phone / WhatsApp
               </span>
-              <a href={`tel:${WA_NUMBER}`} style={{
+              <a href={`tel:${CONTACT_PHONE.replace(/\s/g, "")}`} style={{
                 fontSize: "11px",
                 color: "var(--text-secondary)",
                 textDecoration: "none",
                 transition: "color 0.3s",
               }} onMouseEnter={(e) => e.currentTarget.style.color = "#C6A84B"} onMouseLeave={(e) => e.currentTarget.style.color = ""}>
-                +234 703 462 7308
+                {CONTACT_PHONE}
               </a>
             </div>
             
@@ -683,13 +681,13 @@ export default function Footer() {
               }}>
                 Email
               </span>
-              <a href="mailto:info@emmalexautos.com" style={{
+              <a href={`mailto:${CONTACT_EMAIL}`} style={{
                 fontSize: "11px",
                 color: "var(--text-secondary)",
                 textDecoration: "none",
                 transition: "color 0.3s",
               }} onMouseEnter={(e) => e.currentTarget.style.color = "#C6A84B"} onMouseLeave={(e) => e.currentTarget.style.color = ""}>
-                info@emmalexautos.com
+                {CONTACT_EMAIL}
               </a>
             </div>
             
@@ -706,7 +704,7 @@ export default function Footer() {
                 Location
               </span>
               <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
-                Lagos, Nigeria
+                {LOCATION}
               </span>
             </div>
           </div>
@@ -792,7 +790,7 @@ export default function Footer() {
             color: "var(--text-muted)",
             textAlign: "center",
           }}>
-            © {CURRENT_YEAR} Emmalex Autos & Logistics. All rights reserved.
+            © {CURRENT_YEAR} Emmalex Autos & Logistics. Port Harcourt, Nigeria.
           </div>
           
           {/* Back to Top Button */}

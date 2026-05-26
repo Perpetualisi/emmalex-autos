@@ -1,27 +1,66 @@
-import { useEffect, useState, useCallback } from "react";
-import About from "./components/About";
-import Cars from "./components/Cars";
-import Contact from "./components/Contact";
-import Equipment from "./components/Equipment";
-import Footer from "./components/Footer";
-import Hero from "./components/Hero";
-import Navbar from "./components/Navbar";
-import RealEstate from "./components/Realestate";  // ← Changed to capital R
+import { useEffect, useState, useCallback, lazy, Suspense } from "react";
 
 /* ═══════════════════════════════════════════════════════════
-   SCROLL PROGRESS INDICATOR
+   LAZY LOAD COMPONENTS FOR FASTER INITIAL LOAD
+═══════════════════════════════════════════════════════════ */
+const About = lazy(() => import("./components/About"));
+const Cars = lazy(() => import("./components/Cars"));
+const Contact = lazy(() => import("./components/Contact"));
+const Equipment = lazy(() => import("./components/Equipment"));
+const Footer = lazy(() => import("./components/Footer"));
+const Hero = lazy(() => import("./components/Hero"));
+const Navbar = lazy(() => import("./components/Navbar"));
+const RealEstate = lazy(() => import("./components/Realestate"));
+
+/* ═══════════════════════════════════════════════════════════
+   LOADING FALLBACK COMPONENT
+═══════════════════════════════════════════════════════════ */
+const SectionLoader = () => (
+  <div style={{
+    minHeight: "60vh",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "#000",
+  }}>
+    <div style={{
+      width: "40px",
+      height: "40px",
+      border: "2px solid rgba(198,168,75,0.2)",
+      borderTopColor: "#C6A84B",
+      borderRadius: "50%",
+      animation: "spin 0.8s linear infinite",
+    }} />
+    <style>{`
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    `}</style>
+  </div>
+);
+
+/* ═══════════════════════════════════════════════════════════
+   SCROLL PROGRESS INDICATOR - OPTIMIZED
 ═══════════════════════════════════════════════════════════ */
 const ScrollProgress = () => {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
+    let ticking = false;
     const updateProgress = () => {
-      const scrolled = window.scrollY;
-      const maxHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const percent = (scrolled / maxHeight) * 100;
-      setProgress(percent);
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const scrolled = window.scrollY;
+          const maxHeight = document.documentElement.scrollHeight - window.innerHeight;
+          const percent = (scrolled / maxHeight) * 100;
+          setProgress(percent);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
-    window.addEventListener("scroll", updateProgress);
+    
+    window.addEventListener("scroll", updateProgress, { passive: true });
     return () => window.removeEventListener("scroll", updateProgress);
   }, []);
 
@@ -32,7 +71,7 @@ const ScrollProgress = () => {
       left: 0,
       width: "100%",
       height: "2px",
-      background: "rgba(255,255,255,0.05)",
+      background: "rgba(255,255,255,0.03)",
       zIndex: 1000,
     }}>
       <div style={{
@@ -40,7 +79,7 @@ const ScrollProgress = () => {
         height: "100%",
         background: "linear-gradient(90deg, #C6A84B, #E8C87A, #C6A84B)",
         backgroundSize: "200% auto",
-        transition: "width 0.1s ease",
+        transition: "width 0.1s ease-out",
         animation: "shimmer 1.5s linear infinite",
       }} />
       <style>{`
@@ -54,7 +93,7 @@ const ScrollProgress = () => {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   CURSOR GLOW EFFECT
+   CURSOR GLOW EFFECT - WITH PERFORMANCE OPTIMIZATION
 ═══════════════════════════════════════════════════════════ */
 const CursorGlow = () => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -68,15 +107,21 @@ const CursorGlow = () => {
     checkMobile();
     window.addEventListener("resize", checkMobile);
     
+    let rafId = null;
     const updatePosition = (e) => {
-      setPosition({ x: e.clientX, y: e.clientY });
-      if (!isVisible) setIsVisible(true);
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        setPosition({ x: e.clientX, y: e.clientY });
+        if (!isVisible) setIsVisible(true);
+        rafId = null;
+      });
     };
+    
     const handleMouseLeave = () => setIsVisible(false);
     const handleMouseEnter = () => setIsVisible(true);
 
     if (!isMobile) {
-      window.addEventListener("mousemove", updatePosition);
+      window.addEventListener("mousemove", updatePosition, { passive: true });
       document.body.addEventListener("mouseleave", handleMouseLeave);
       document.body.addEventListener("mouseenter", handleMouseEnter);
     }
@@ -86,6 +131,7 @@ const CursorGlow = () => {
       window.removeEventListener("mousemove", updatePosition);
       document.body.removeEventListener("mouseleave", handleMouseLeave);
       document.body.removeEventListener("mouseenter", handleMouseEnter);
+      if (rafId) cancelAnimationFrame(rafId);
     };
   }, [isMobile, isVisible]);
 
@@ -101,9 +147,9 @@ const CursorGlow = () => {
         top: position.y - 150,
         width: "300px",
         height: "300px",
-        background: "radial-gradient(circle, rgba(198,168,75,0.08) 0%, rgba(198,168,75,0.03) 40%, transparent 70%)",
+        background: "radial-gradient(circle, rgba(198,168,75,0.06) 0%, rgba(198,168,75,0.02) 40%, transparent 70%)",
         borderRadius: "50%",
-        transition: "transform 0.05s ease",
+        willChange: "transform",
       }} />
       <div style={{
         position: "fixed",
@@ -115,24 +161,31 @@ const CursorGlow = () => {
         height: "6px",
         background: "#C6A84B",
         borderRadius: "50%",
-        opacity: 0.5,
-        transition: "transform 0.05s ease",
+        opacity: 0.6,
+        willChange: "transform",
       }} />
     </>
   );
 };
 
 /* ═══════════════════════════════════════════════════════════
-   SCROLL TO TOP BUTTON
+   SCROLL TO TOP BUTTON - WITH SMOOTH ANIMATION
 ═══════════════════════════════════════════════════════════ */
 const ScrollToTop = () => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    let ticking = false;
     const toggleVisibility = () => {
-      setIsVisible(window.scrollY > 500);
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          setIsVisible(window.scrollY > 500);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
-    window.addEventListener("scroll", toggleVisibility);
+    window.addEventListener("scroll", toggleVisibility, { passive: true });
     return () => window.removeEventListener("scroll", toggleVisibility);
   }, []);
 
@@ -184,13 +237,14 @@ const ScrollToTop = () => {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   LOADING SCREEN
+   LOADING SCREEN - WITH MINIMAL DELAY
 ═══════════════════════════════════════════════════════════ */
 const LoadingScreen = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1500);
+    // Shorter loading time for better UX
+    const timer = setTimeout(() => setIsLoading(false), 800);
     return () => clearTimeout(timer);
   }, []);
 
@@ -208,22 +262,23 @@ const LoadingScreen = () => {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      animation: "fadeOut 0.8s ease forwards 1.2s",
+      animation: "fadeOut 0.6s ease forwards 0.8s",
     }}>
       <div style={{ textAlign: "center" }}>
         <div style={{
-          width: "60px",
-          height: "60px",
+          width: "50px",
+          height: "50px",
           border: "2px solid rgba(198,168,75,0.2)",
           borderTopColor: "#C6A84B",
+          borderRightColor: "#E8C87A",
           borderRadius: "50%",
-          animation: "spin 0.8s linear infinite",
+          animation: "spin 0.6s linear infinite",
           marginBottom: "20px",
         }} />
         <div style={{
           fontFamily: "'DM Serif Display', serif",
-          fontSize: "14px",
-          letterSpacing: "0.3em",
+          fontSize: "12px",
+          letterSpacing: "0.4em",
           textTransform: "uppercase",
           color: "#C6A84B",
         }}>
@@ -243,34 +298,162 @@ const LoadingScreen = () => {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   SECTION OBSERVER (for active nav highlighting)
+   SECTION OBSERVER - OPTIMIZED FOR PERFORMANCE
 ═══════════════════════════════════════════════════════════ */
 const useSectionObserver = (sections) => {
-  const [activeSection, setActiveSection] = useState("");
+  const [activeSection, setActiveSection] = useState("home");
 
   useEffect(() => {
-    const observers = sections.map((sectionId) => {
+    const observers = [];
+    const observerCallback = (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const sectionId = entry.target.getAttribute("id");
+          setActiveSection(sectionId);
+        }
+      });
+    };
+    
+    const observer = new IntersectionObserver(observerCallback, {
+      threshold: 0.3,
+      rootMargin: "-80px 0px -80px 0px",
+    });
+    
+    sections.forEach((sectionId) => {
       const element = document.getElementById(sectionId);
-      if (!element) return null;
-
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            setActiveSection(sectionId);
-          }
-        },
-        { threshold: 0.3, rootMargin: "-80px 0px -80px 0px" }
-      );
-      observer.observe(element);
-      return observer;
+      if (element) {
+        observer.observe(element);
+        observers.push(element);
+      }
     });
 
     return () => {
-      observers.forEach((observer) => observer?.disconnect());
+      observers.forEach((element) => observer.unobserve(element));
     };
   }, [sections]);
 
   return activeSection;
+};
+
+/* ═══════════════════════════════════════════════════════════
+   PREMIUM FEATURE: BREATHING BACKGROUND EFFECT
+═══════════════════════════════════════════════════════════ */
+const BackgroundAmbient = () => {
+  const [mousePosition, setMousePosition] = useState({ x: 0.5, y: 0.5 });
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      const x = e.clientX / window.innerWidth;
+      const y = e.clientY / window.innerHeight;
+      setMousePosition({ x, y });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
+  return (
+    <div style={{
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      pointerEvents: "none",
+      zIndex: 0,
+      overflow: "hidden",
+    }}>
+      <div style={{
+        position: "absolute",
+        top: `${mousePosition.y * 100}%`,
+        left: `${mousePosition.x * 100}%`,
+        width: "800px",
+        height: "800px",
+        background: "radial-gradient(circle, rgba(198,168,75,0.04) 0%, transparent 60%)",
+        borderRadius: "50%",
+        transform: "translate(-50%, -50%)",
+        transition: "top 0.3s ease-out, left 0.3s ease-out",
+        willChange: "top, left",
+      }} />
+      <div style={{
+        position: "absolute",
+        top: "20%",
+        left: "-10%",
+        width: "500px",
+        height: "500px",
+        background: "radial-gradient(circle, rgba(100,150,255,0.02) 0%, transparent 70%)",
+        borderRadius: "50%",
+        animation: "float 20s ease-in-out infinite",
+      }} />
+      <div style={{
+        position: "absolute",
+        bottom: "10%",
+        right: "-5%",
+        width: "400px",
+        height: "400px",
+        background: "radial-gradient(circle, rgba(255,100,100,0.02) 0%, transparent 70%)",
+        borderRadius: "50%",
+        animation: "float 25s ease-in-out infinite reverse",
+      }} />
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translate(0, 0); }
+          50% { transform: translate(50px, 30px); }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+/* ═══════════════════════════════════════════════════════════
+   PREMIUM FEATURE: KEYBOARD SHORTCUTS HINT
+═══════════════════════════════════════════════════════════ */
+const KeyboardHints = () => {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setVisible(true), 3000);
+    const hideTimer = setTimeout(() => setVisible(false), 8000);
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(hideTimer);
+    };
+  }, []);
+
+  if (!visible) return null;
+
+  return (
+    <div style={{
+      position: "fixed",
+      bottom: "100px",
+      right: "32px",
+      zIndex: 99,
+      background: "rgba(0,0,0,0.8)",
+      backdropFilter: "blur(8px)",
+      border: "1px solid rgba(198,168,75,0.2)",
+      borderRadius: "8px",
+      padding: "10px 16px",
+      fontSize: "9px",
+      fontFamily: "'Overpass Mono', monospace",
+      color: "rgba(255,255,255,0.5)",
+      letterSpacing: "0.3em",
+      animation: "slideInRight 0.3s ease, fadeOut 0.3s ease 4.7s forwards",
+    }}>
+      <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+        <span>⌘K</span>
+        <span style={{ width: "1px", height: "10px", background: "rgba(255,255,255,0.2)" }} />
+        <span>↑↓ Navigate</span>
+      </div>
+      <style>{`
+        @keyframes slideInRight {
+          from { transform: translateX(100px); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+          to { opacity: 0; visibility: hidden; }
+        }
+      `}</style>
+    </div>
+  );
 };
 
 /* ═══════════════════════════════════════════════════════════
@@ -280,6 +463,7 @@ function App() {
   const sections = ["home", "about", "cars", "realestate", "equipment", "contact"];
   const activeSection = useSectionObserver(sections);
 
+  // Smooth scroll handler
   useEffect(() => {
     const handleAnchorClick = (e) => {
       const target = e.target.closest('a[href^="#"]');
@@ -300,13 +484,22 @@ function App() {
     return () => document.removeEventListener("click", handleAnchorClick);
   }, []);
 
+  // Keyboard navigation with cmd+K shortcut
   useEffect(() => {
     const handleKeyDown = (e) => {
+      // Command/Ctrl + K for quick navigation
       if ((e.ctrlKey || e.metaKey) && e.key === "k") {
         e.preventDefault();
-        console.log("Quick navigation - Command palette would open");
+        const sectionsList = sections.map(s => s.toUpperCase());
+        const currentIndex = sections.indexOf(activeSection);
+        const nextSection = sections[(currentIndex + 1) % sections.length];
+        const element = document.getElementById(nextSection);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
       }
       
+      // Arrow keys for section navigation
       if (e.key === "ArrowDown" || e.key === "ArrowUp") {
         const currentIndex = sections.indexOf(activeSection);
         if (currentIndex !== -1) {
@@ -322,47 +515,96 @@ function App() {
           }
         }
       }
+      
+      // Escape key - scroll to top
+      if (e.key === "Escape") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      
+      // Home key - scroll to top
+      if (e.key === "Home") {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
     };
     
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [activeSection, sections]);
 
+  // Preload critical assets
+  useEffect(() => {
+    if ("requestIdleCallback" in window) {
+      requestIdleCallback(() => {
+        // Preload critical fonts and assets
+        const links = [
+          "https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap",
+        ];
+        links.forEach(href => {
+          const link = document.createElement("link");
+          link.rel = "preload";
+          link.as = "style";
+          link.href = href;
+          document.head.appendChild(link);
+        });
+      });
+    }
+  }, []);
+
   return (
     <>
       <LoadingScreen />
+      <BackgroundAmbient />
       <ScrollProgress />
       <CursorGlow />
+      <KeyboardHints />
       
-      <Navbar activeSection={activeSection} />
+      <Suspense fallback={<SectionLoader />}>
+        <Navbar activeSection={activeSection} />
+      </Suspense>
       
-      <main>
+      <main style={{ position: "relative", zIndex: 1 }}>
         <section id="home">
-          <Hero />
+          <Suspense fallback={<SectionLoader />}>
+            <Hero />
+          </Suspense>
         </section>
         
         <section id="about">
-          <About />
+          <Suspense fallback={<SectionLoader />}>
+            <About />
+          </Suspense>
         </section>
         
         <section id="cars">
-          <Cars />
+          <Suspense fallback={<SectionLoader />}>
+            <Cars />
+          </Suspense>
         </section>
         
         <section id="realestate">
-          <RealEstate />
+          <Suspense fallback={<SectionLoader />}>
+            <RealEstate />
+          </Suspense>
         </section>
         
         <section id="equipment">
-          <Equipment />
+          <Suspense fallback={<SectionLoader />}>
+            <Equipment />
+          </Suspense>
         </section>
         
         <section id="contact">
-          <Contact />
+          <Suspense fallback={<SectionLoader />}>
+            <Contact />
+          </Suspense>
         </section>
       </main>
       
-      <Footer />
+      <Suspense fallback={null}>
+        <Footer />
+      </Suspense>
+      
       <ScrollToTop />
       
       <style>{`
@@ -412,7 +654,7 @@ function App() {
         }
         
         ::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.03);
+          background: rgba(255, 255, 255, 0.02);
         }
         
         ::-webkit-scrollbar-thumb {
@@ -444,17 +686,29 @@ function App() {
           color: #C6A84B;
         }
         
+        /* Progressive section loading */
         section {
           opacity: 0;
-          animation: fadeIn 0.6s ease forwards;
+          animation: fadeIn 0.5s ease forwards;
         }
         
-        section:nth-child(1) { animation-delay: 0.1s; }
-        section:nth-child(2) { animation-delay: 0.2s; }
-        section:nth-child(3) { animation-delay: 0.3s; }
-        section:nth-child(4) { animation-delay: 0.4s; }
-        section:nth-child(5) { animation-delay: 0.5s; }
-        section:nth-child(6) { animation-delay: 0.6s; }
+        section:nth-child(1) { animation-delay: 0.05s; }
+        section:nth-child(2) { animation-delay: 0.1s; }
+        section:nth-child(3) { animation-delay: 0.15s; }
+        section:nth-child(4) { animation-delay: 0.2s; }
+        section:nth-child(5) { animation-delay: 0.25s; }
+        section:nth-child(6) { animation-delay: 0.3s; }
+        
+        /* Performance optimizations */
+        img, video, canvas {
+          content-visibility: auto;
+        }
+        
+        @media (max-width: 768px) {
+          section {
+            scroll-margin-top: 60px;
+          }
+        }
       `}</style>
     </>
   );

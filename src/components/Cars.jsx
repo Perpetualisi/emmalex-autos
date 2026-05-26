@@ -9,17 +9,47 @@ const WA_MSG = (brand, model) =>
   `${WA}?text=${encodeURIComponent(`Hello Nigeria Used Cars! I'm interested in the ${brand} ${model}. Please send me more details.`)}`;
 const WA_GENERAL = `${WA}?text=${encodeURIComponent(`Hello Nigeria Used Cars! I'm interested in your vehicle collection. Please send me more information about available cars.`)}`;
 
-// Five most popular cars in Nigeria
+// Five most popular cars in Nigeria with unique scene configurations
 const CARS = [
-  { id:1, brand:"Toyota", model:"Hilux", category:"Pickup", tag:"BESTSELLER", specs:["2.8L Turbo","204 HP","4WD"], bodyColor:0x2c5a2c, rimColor:0xaaaaaa, accent:"#4CAF50", type:"pickup_truck", groundClearance:0.42, description:"Nigeria's #1 choice for business and family - rugged, reliable, unstoppable." },
-  { id:2, brand:"Toyota", model:"Corolla", category:"Sedan", tag:"BEST VALUE", specs:["1.8L","140 HP","FWD"], bodyColor:0x1a2a4a, rimColor:0xc0c0c0, accent:"#3A7BD5", type:"sedan", groundClearance:0.28, description:"The best-selling sedan in Nigeria - fuel efficient, affordable, trusted nationwide." },
-  { id:3, brand:"Honda", model:"CR-V", category:"SUV", tag:"FAMILY FAVORITE", specs:["1.5L Turbo","190 HP","AWD"], bodyColor:0x2a4a5a, rimColor:0xcccccc, accent:"#5DADE2", type:"crossover_suv", groundClearance:0.36, description:"Premium crossover comfort with legendary Honda reliability." },
-  { id:4, brand:"Mercedes-Benz", model:"C300", category:"Luxury", tag:"ENTRY LUXURY", specs:["2.0L Turbo","255 HP","RWD"], bodyColor:0x1a1a1a, rimColor:0xc6a84b, accent:"#D4AF37", type:"luxury_sedan", groundClearance:0.26, description:"German engineering meets Nigerian style - the executive choice." },
-  { id:5, brand:"Lexus", model:"RX 350", category:"Luxury SUV", tag:"PREMIUM CHOICE", specs:["3.5L V6","295 HP","AWD"], bodyColor:0x0a1a2a, rimColor:0xc6a84b, accent:"#C6A84B", type:"luxury_suv", groundClearance:0.34, description:"Ultimate luxury SUV for Nigerian roads - comfort, power, prestige." },
+  { 
+    id:1, brand:"Toyota", model:"Hilux", category:"Pickup", tag:"BESTSELLER", 
+    specs:["2.8L Turbo","204 HP","4WD"], bodyColor:0x3a7a3a, rimColor:0xddcc88, accent:"#4CAF50", 
+    type:"pickup_truck", groundClearance:0.42, 
+    description:"Nigeria's #1 choice for business and family - rugged, reliable, unstoppable.",
+    sceneConfig: { bgColor: 0x0a1a0a, fogColor: 0x0a2a0a, lightColor: 0x88ff88, envType: "forest", particleColor: 0x66ff66 }
+  },
+  { 
+    id:2, brand:"Toyota", model:"Corolla", category:"Sedan", tag:"BEST VALUE", 
+    specs:["1.8L","140 HP","FWD"], bodyColor:0x2a4a8a, rimColor:0xc0c0c0, accent:"#4488DD", 
+    type:"sedan", groundClearance:0.28, 
+    description:"The best-selling sedan in Nigeria - fuel efficient, affordable, trusted nationwide.",
+    sceneConfig: { bgColor: 0x0a0a2a, fogColor: 0x0a0a3a, lightColor: 0x88aaff, envType: "urban", particleColor: 0x88aaff }
+  },
+  { 
+    id:3, brand:"Honda", model:"CR-V", category:"SUV", tag:"FAMILY FAVORITE", 
+    specs:["1.5L Turbo","190 HP","AWD"], bodyColor:0x2a6a8a, rimColor:0xdddddd, accent:"#5DADE2", 
+    type:"crossover_suv", groundClearance:0.36, 
+    description:"Premium crossover comfort with legendary Honda reliability.",
+    sceneConfig: { bgColor: 0x1a2a3a, fogColor: 0x1a3a4a, lightColor: 0x88ccff, envType: "mountain", particleColor: 0xaaddff }
+  },
+  { 
+    id:4, brand:"Mercedes-Benz", model:"C300", category:"Luxury", tag:"ENTRY LUXURY", 
+    specs:["2.0L Turbo","255 HP","RWD"], bodyColor:0xd4af37, rimColor:0xffdd99, accent:"#FFD700", 
+    type:"luxury_sedan", groundClearance:0.26, 
+    description:"German engineering meets Nigerian style - the executive choice.",
+    sceneConfig: { bgColor: 0x1a0a0a, fogColor: 0x2a0a0a, lightColor: 0xffcc88, envType: "golden", particleColor: 0xffcc66 }
+  },
+  { 
+    id:5, brand:"Lexus", model:"RX 350", category:"Luxury SUV", tag:"PREMIUM CHOICE", 
+    specs:["3.5L V6","295 HP","AWD"], bodyColor:0x8b0000, rimColor:0xffdd88, accent:"#C6A84B", 
+    type:"luxury_suv", groundClearance:0.34, 
+    description:"Ultimate luxury SUV for Nigerian roads - comfort, power, prestige.",
+    sceneConfig: { bgColor: 0x0a0a1a, fogColor: 0x0a0a2a, lightColor: 0xffaa88, envType: "premium", particleColor: 0xffaa66 }
+  },
 ];
 
 /* ─────────────────────────────────────────────────────────────
-   MATERIALS
+   ENHANCED PREMIUM MATERIALS
 ───────────────────────────────────────────────────────────── */
 const GEO = {
   box: (w, h, d) => new THREE.BoxGeometry(w, h, d),
@@ -35,351 +65,509 @@ const MAT = {
     color: color, metalness: metalness, roughness: roughness
   }),
   pearlPaint: (color) => new THREE.MeshStandardMaterial({
-    color: color, metalness: 0.92, roughness: 0.1, emissive: color, emissiveIntensity: 0.02
+    color: color, metalness: 0.96, roughness: 0.08, emissive: color, emissiveIntensity: 0.05
+  }),
+  metallicPaint: (color, intensity = 0.08) => new THREE.MeshStandardMaterial({
+    color: color, metalness: 0.94, roughness: 0.1, emissive: color, emissiveIntensity: intensity
   }),
   glass: () => new THREE.MeshPhysicalMaterial({
-    color: 0xa8d0f0, metalness: 0.95, roughness: 0.1, transparent: true, opacity: 0.7, ior: 1.5
+    color: 0xa8d0f0, metalness: 0.95, roughness: 0.1, transparent: true, opacity: 0.78, ior: 1.52
   }),
   chrome: () => new THREE.MeshStandardMaterial({
-    color: 0xe8f0ff, metalness: 0.98, roughness: 0.04
+    color: 0xe8f0ff, metalness: 0.99, roughness: 0.03, emissive: 0x446688, emissiveIntensity: 0.08
+  }),
+  goldChrome: () => new THREE.MeshStandardMaterial({
+    color: 0xffdd88, metalness: 0.98, roughness: 0.04, emissive: 0x442200, emissiveIntensity: 0.1
+  }),
+  blackChrome: () => new THREE.MeshStandardMaterial({
+    color: 0x2a2a2a, metalness: 0.95, roughness: 0.05, emissive: 0x111111, emissiveIntensity: 0.05
   }),
   rubber: () => new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.85, metalness: 0.05 }),
   plastic: () => new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.6, metalness: 0.1 }),
-  headlight: (color, intensity = 0.7) => new THREE.MeshStandardMaterial({
-    color: color, emissive: color, emissiveIntensity: intensity, metalness: 0.9, roughness: 0.1
+  carbon: () => new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.3, metalness: 0.85 }),
+  headlight: (color, intensity = 0.9) => new THREE.MeshStandardMaterial({
+    color: color, emissive: color, emissiveIntensity: intensity, metalness: 0.95, roughness: 0.08
   }),
-  taillight: () => new THREE.MeshStandardMaterial({ color: 0xff2200, emissive: 0xff2200, emissiveIntensity: 0.5 }),
-  shadow: () => new THREE.ShadowMaterial({ opacity: 0.4, transparent: true }),
+  taillight: () => new THREE.MeshStandardMaterial({ color: 0xff3300, emissive: 0xff3300, emissiveIntensity: 0.7, metalness: 0.3 }),
+  shadow: () => new THREE.ShadowMaterial({ opacity: 0.45, transparent: true, blur: 1.2 }),
 };
 
 function mesh(geo, mat) { const m = new THREE.Mesh(geo, mat); m.castShadow = true; m.receiveShadow = true; return m; }
 
-function buildWheel(isPremium, rimColor) {
+function buildPremiumWheel(isPremium, rimColor, isSport = false) {
   const group = new THREE.Group();
-  const tire = mesh(GEO.torus(0.39, 0.12, 32, 64), MAT.rubber());
+  const tire = mesh(GEO.torus(0.42, 0.13, 40, 80), MAT.rubber());
   tire.rotation.x = Math.PI / 2;
   group.add(tire);
-  const rimBase = mesh(GEO.cyl(0.28, 0.28, 0.12, 40), MAT.chrome());
+  
+  const rimBase = mesh(GEO.cyl(0.31, 0.31, 0.14, 48), rimColor === 0xffdd88 ? MAT.goldChrome() : MAT.chrome());
   rimBase.rotation.x = Math.PI / 2;
   group.add(rimBase);
-  const spokeCount = isPremium ? 7 : 6;
+  
+  const spokeCount = isSport ? 10 : (isPremium ? 8 : 6);
   for (let i = 0; i < spokeCount; i++) {
     const angle = (i / spokeCount) * Math.PI * 2;
-    const spoke = mesh(GEO.box(0.04, 0.45, 0.04), MAT.chrome());
-    spoke.position.set(Math.sin(angle) * 0.16, 0, Math.cos(angle) * 0.16);
+    const spokeWidth = isSport ? 0.03 : 0.045;
+    const spoke = mesh(GEO.box(spokeWidth, 0.5, 0.045), rimColor === 0xffdd88 ? MAT.goldChrome() : MAT.chrome());
+    spoke.position.set(Math.sin(angle) * 0.18, 0, Math.cos(angle) * 0.18);
     group.add(spoke);
   }
-  const centerCap = mesh(GEO.cyl(0.09, 0.09, 0.1, 24), MAT.chrome());
+  
+  const centerCap = mesh(GEO.cyl(0.11, 0.11, 0.12, 32), MAT.metallicPaint(rimColor, 0.15));
   centerCap.rotation.x = Math.PI / 2;
   group.add(centerCap);
+  
+  const rimRing = mesh(GEO.torus(0.25, 0.02, 24, 72), MAT.blackChrome());
+  rimRing.rotation.x = Math.PI / 2;
+  group.add(rimRing);
+  
   return group;
 }
 
 /* ============================================================
-   CAR MODELS
+   ENHANCED CAR MODELS WITH UNIQUE DESIGNS
 ============================================================ */
 
-// TOYOTA HILUX - Rugged pickup truck
+// TOYOTA HILUX - Rugged off-road pickup with roof lights
 function buildPickupTruck(bodyColor) {
   const group = new THREE.Group();
   const paint = MAT.carPaint(bodyColor, 0.75, 0.35);
   const chrome = MAT.chrome();
   const glass = MAT.glass();
-  const plastic = MAT.plastic();
+  const carbon = MAT.carbon();
   
   // Bed
-  const bed = mesh(GEO.box(4.9, 0.52, 2.15), paint);
-  bed.position.y = -0.36;
+  const bed = mesh(GEO.box(4.95, 0.55, 2.2), paint);
+  bed.position.y = -0.38;
   group.add(bed);
   
+  // Bed liner
+  const bedLiner = mesh(GEO.box(4.7, 0.08, 2.0), carbon);
+  bedLiner.position.y = -0.12;
+  group.add(bedLiner);
+  
   // Cabin
-  const cabin = mesh(GEO.box(2.6, 0.82, 2.15), paint);
-  cabin.position.set(-1.35, 0.14, 0);
+  const cabin = mesh(GEO.box(2.65, 0.85, 2.2), paint);
+  cabin.position.set(-1.38, 0.12, 0);
   group.add(cabin);
   
   // Windows
-  const windowFront = mesh(GEO.box(0.4, 0.45, 1.95), glass);
-  windowFront.position.set(-1.2, 0.48, 0);
+  const windowFront = mesh(GEO.box(0.42, 0.48, 2.0), glass);
+  windowFront.position.set(-1.22, 0.5, 0);
   group.add(windowFront);
-  const windowRear = mesh(GEO.box(0.35, 0.4, 1.9), glass);
-  windowRear.position.set(-1.85, 0.46, 0);
+  const windowRear = mesh(GEO.box(0.38, 0.42, 1.95), glass);
+  windowRear.position.set(-1.88, 0.48, 0);
   group.add(windowRear);
   
-  // Grille with TOYOTA lettering
-  const grille = mesh(GEO.box(0.13, 0.5, 1.78), chrome);
-  grille.position.set(-2.55, -0.08, 0);
+  // Grille
+  const grille = mesh(GEO.box(0.14, 0.52, 1.82), chrome);
+  grille.position.set(-2.58, -0.08, 0);
   group.add(grille);
   
+  // Toyota badge
+  const badge = mesh(GEO.box(0.04, 0.12, 0.35), MAT.metallicPaint(0xffdd88, 0.2));
+  badge.position.set(-2.56, 0.04, 0);
+  group.add(badge);
+  
   // Bull bar
-  const bullBar = mesh(GEO.box(0.08, 0.42, 2.05), chrome);
-  bullBar.position.set(-2.62, -0.05, 0);
+  const bullBar = mesh(GEO.box(0.09, 0.45, 2.1), chrome);
+  bullBar.position.set(-2.65, -0.05, 0);
   group.add(bullBar);
   
+  // LED light bar
+  const lightBar = mesh(GEO.box(0.05, 0.08, 1.6), MAT.headlight(0xffeedd, 1.2));
+  lightBar.position.set(-2.62, 0.08, 0);
+  group.add(lightBar);
+  
+  // Roof-mounted LED lights
+  const roofLights = [-0.8, -0.4, 0, 0.4, 0.8];
+  roofLights.forEach((x) => {
+    const light = mesh(GEO.box(0.08, 0.06, 0.08), MAT.headlight(0xffaa66, 1.0));
+    light.position.set(x - 1.2, 0.72, 1.05);
+    group.add(light);
+  });
+  
   // Headlights
-  const headlightL = mesh(GEO.box(0.09, 0.16, 0.32), MAT.headlight(0xffeedd, 0.7));
-  headlightL.position.set(-2.5, -0.14, 0.98);
+  const headlightL = mesh(GEO.box(0.1, 0.18, 0.35), MAT.headlight(0xffeedd, 0.85));
+  headlightL.position.set(-2.52, -0.14, 1.02);
   group.add(headlightL);
-  const headlightR = mesh(GEO.box(0.09, 0.16, 0.32), MAT.headlight(0xffeedd, 0.7));
-  headlightR.position.set(-2.5, -0.14, -0.98);
+  const headlightR = mesh(GEO.box(0.1, 0.18, 0.35), MAT.headlight(0xffeedd, 0.85));
+  headlightR.position.set(-2.52, -0.14, -1.02);
   group.add(headlightR);
   
   // Taillights
-  const tailL = mesh(GEO.box(0.09, 0.18, 0.13), MAT.taillight());
-  tailL.position.set(2.52, -0.1, 1.1);
+  const tailL = mesh(GEO.box(0.1, 0.2, 0.14), MAT.taillight());
+  tailL.position.set(2.55, -0.1, 1.13);
   group.add(tailL);
-  const tailR = mesh(GEO.box(0.09, 0.18, 0.13), MAT.taillight());
-  tailR.position.set(2.52, -0.1, -1.1);
+  const tailR = mesh(GEO.box(0.1, 0.2, 0.14), MAT.taillight());
+  tailR.position.set(2.55, -0.1, -1.13);
   group.add(tailR);
   
   // Side steps
-  const step = mesh(GEO.box(3.8, 0.04, 0.18), chrome);
-  step.position.set(-0.4, -0.48, 1.25);
+  const step = mesh(GEO.box(3.9, 0.05, 0.2), chrome);
+  step.position.set(-0.4, -0.48, 1.28);
   group.add(step);
-  
-  // Roof rails
-  const railL = mesh(GEO.box(2.8, 0.05, 0.07), chrome);
-  railL.position.set(-1.2, 0.68, 1.12);
-  group.add(railL);
-  
-  // Wheels (off-road style)
-  const wheels = [];
-  const wheelPos = [[-1.78, -0.52, 1.22], [1.68, -0.52, 1.22], [-1.78, -0.52, -1.22], [1.68, -0.52, -1.22]];
-  wheelPos.forEach(pos => { const w = buildWheel(false, 0xaaaaaa); w.position.set(pos[0], pos[1], pos[2]); group.add(w); wheels.push(w); });
-  
-  return { group, wheels };
-}
-
-// TOYOTA COROLLA - Sleek sedan
-function buildSedan(bodyColor) {
-  const group = new THREE.Group();
-  const paint = MAT.carPaint(bodyColor, 0.85, 0.2);
-  const chrome = MAT.chrome();
-  const glass = MAT.glass();
-  
-  const body = mesh(GEO.box(4.3, 0.46, 1.88), paint);
-  body.position.y = -0.44;
-  group.add(body);
-  
-  const roof = mesh(GEO.box(3.0, 0.09, 1.68), paint);
-  roof.position.set(-0.2, 0.42, 0);
-  group.add(roof);
-  
-  const windshield = mesh(GEO.box(0.35, 0.38, 1.62), glass);
-  windshield.position.set(-0.4, 0.52, 0);
-  group.add(windshield);
-  
-  const grille = mesh(GEO.box(0.09, 0.32, 1.55), chrome);
-  grille.position.set(2.18, -0.2, 0);
-  group.add(grille);
-  
-  // Headlights
-  const headlightL = mesh(GEO.box(0.09, 0.14, 0.32), MAT.headlight(0xffeedd, 0.7));
-  headlightL.position.set(2.16, -0.16, 0.92);
-  group.add(headlightL);
-  const headlightR = mesh(GEO.box(0.09, 0.14, 0.32), MAT.headlight(0xffeedd, 0.7));
-  headlightR.position.set(2.16, -0.16, -0.92);
-  group.add(headlightR);
-  
-  // Taillights
-  const tailL = mesh(GEO.box(0.07, 0.16, 0.13), MAT.taillight());
-  tailL.position.set(-2.2, -0.14, 1.0);
-  group.add(tailL);
-  const tailR = mesh(GEO.box(0.07, 0.16, 0.13), MAT.taillight());
-  tailR.position.set(-2.2, -0.14, -1.0);
-  group.add(tailR);
   
   // Wheels
   const wheels = [];
-  const wheelPos = [[-1.52, -0.56, 1.04], [1.52, -0.56, 1.04], [-1.52, -0.56, -1.04], [1.52, -0.56, -1.04]];
-  wheelPos.forEach(pos => { const w = buildWheel(false, 0xcccccc); w.position.set(pos[0], pos[1], pos[2]); group.add(w); wheels.push(w); });
+  const wheelPos = [[-1.82, -0.54, 1.25], [1.72, -0.54, 1.25], [-1.82, -0.54, -1.25], [1.72, -0.54, -1.25]];
+  wheelPos.forEach(pos => { const w = buildPremiumWheel(false, 0xccccaa, true); w.position.set(pos[0], pos[1], pos[2]); group.add(w); wheels.push(w); });
   
   return { group, wheels };
 }
 
-// HONDA CR-V - Crossover SUV
-function buildCrossoverSUV(bodyColor) {
+// TOYOTA COROLLA - Sleek sedan with sporty accents
+function buildSedan(bodyColor) {
   const group = new THREE.Group();
-  const paint = MAT.carPaint(bodyColor, 0.82, 0.25);
+  const paint = MAT.metallicPaint(bodyColor, 0.06);
   const chrome = MAT.chrome();
   const glass = MAT.glass();
   
-  const body = mesh(GEO.box(4.45, 0.52, 2.0), paint);
-  body.position.y = -0.38;
+  const body = mesh(GEO.box(4.35, 0.48, 1.92), paint);
+  body.position.y = -0.46;
   group.add(body);
   
-  const roof = mesh(GEO.box(3.5, 0.09, 1.88), paint);
-  roof.position.set(-0.1, 0.44, 0);
+  const roof = mesh(GEO.box(3.1, 0.1, 1.72), paint);
+  roof.position.set(-0.2, 0.44, 0);
   group.add(roof);
   
-  const grille = mesh(GEO.box(0.11, 0.4, 1.65), chrome);
-  grille.position.set(2.28, -0.1, 0);
+  // Sunroof
+  const sunroof = mesh(GEO.box(1.8, 0.03, 0.9), glass);
+  sunroof.position.set(-0.25, 0.54, 0);
+  group.add(sunroof);
+  
+  const windshield = mesh(GEO.box(0.38, 0.4, 1.66), glass);
+  windshield.position.set(-0.42, 0.54, 0);
+  group.add(windshield);
+  
+  const grille = mesh(GEO.box(0.1, 0.34, 1.58), chrome);
+  grille.position.set(2.22, -0.22, 0);
+  group.add(grille);
+  
+  // Sporty front lip
+  const frontLip = mesh(GEO.box(0.06, 0.05, 1.68), chrome);
+  frontLip.position.set(2.26, -0.44, 0);
+  group.add(frontLip);
+  
+  // Headlights
+  const headlightL = mesh(GEO.box(0.1, 0.15, 0.34), MAT.headlight(0xffeedd, 0.8));
+  headlightL.position.set(2.2, -0.18, 0.96);
+  group.add(headlightL);
+  const headlightR = mesh(GEO.box(0.1, 0.15, 0.34), MAT.headlight(0xffeedd, 0.8));
+  headlightR.position.set(2.2, -0.18, -0.96);
+  group.add(headlightR);
+  
+  // LED DRL strips
+  const drlL = mesh(GEO.box(0.05, 0.04, 0.28), MAT.headlight(0x88aaff, 0.6));
+  drlL.position.set(2.18, -0.04, 0.96);
+  group.add(drlL);
+  
+  // Taillights
+  const tailL = mesh(GEO.box(0.08, 0.18, 0.14), MAT.taillight());
+  tailL.position.set(-2.24, -0.15, 1.04);
+  group.add(tailL);
+  const tailR = mesh(GEO.box(0.08, 0.18, 0.14), MAT.taillight());
+  tailR.position.set(-2.24, -0.15, -1.04);
+  group.add(tailR);
+  
+  const wheels = [];
+  const wheelPos = [[-1.56, -0.58, 1.08], [1.56, -0.58, 1.08], [-1.56, -0.58, -1.08], [1.56, -0.58, -1.08]];
+  wheelPos.forEach(pos => { const w = buildPremiumWheel(false, 0xcccccc, false); w.position.set(pos[0], pos[1], pos[2]); group.add(w); wheels.push(w); });
+  
+  return { group, wheels };
+}
+
+// HONDA CR-V - Crossover SUV with panoramic roof
+function buildCrossoverSUV(bodyColor) {
+  const group = new THREE.Group();
+  const paint = MAT.metallicPaint(bodyColor, 0.07);
+  const chrome = MAT.chrome();
+  const glass = MAT.glass();
+  
+  const body = mesh(GEO.box(4.5, 0.55, 2.05), paint);
+  body.position.y = -0.4;
+  group.add(body);
+  
+  const roof = mesh(GEO.box(3.6, 0.1, 1.92), paint);
+  roof.position.set(-0.1, 0.46, 0);
+  group.add(roof);
+  
+  // Panoramic glass roof
+  const panoRoof = mesh(GEO.box(2.8, 0.04, 1.5), glass);
+  panoRoof.position.set(-0.15, 0.56, 0);
+  group.add(panoRoof);
+  
+  const grille = mesh(GEO.box(0.12, 0.42, 1.7), chrome);
+  grille.position.set(2.32, -0.1, 0);
   group.add(grille);
   
   // Wing logo area
-  const logoArea = mesh(GEO.box(0.05, 0.18, 0.45), chrome);
-  logoArea.position.set(2.26, 0.02, 0);
+  const logoArea = mesh(GEO.box(0.06, 0.2, 0.5), chrome);
+  logoArea.position.set(2.3, 0.04, 0);
   group.add(logoArea);
   
   // LED DRL strip
-  const drlL = mesh(GEO.box(0.05, 0.05, 0.35), MAT.headlight(0x88aaff, 0.5));
-  drlL.position.set(2.24, 0.08, 0.95);
+  const drlL = mesh(GEO.box(0.06, 0.05, 0.38), MAT.headlight(0x88aaff, 0.7));
+  drlL.position.set(2.28, 0.1, 0.98);
   group.add(drlL);
   
-  const headlightL = mesh(GEO.box(0.09, 0.15, 0.34), MAT.headlight(0xffeedd, 0.7));
-  headlightL.position.set(2.24, -0.08, 0.95);
+  const headlightL = mesh(GEO.box(0.1, 0.16, 0.36), MAT.headlight(0xffeedd, 0.85));
+  headlightL.position.set(2.28, -0.08, 0.98);
   group.add(headlightL);
   
-  const tailL = mesh(GEO.box(0.08, 0.18, 0.14), MAT.taillight());
-  tailL.position.set(-2.28, -0.06, 1.08);
+  // Fog lights
+  const fogL = mesh(GEO.box(0.07, 0.07, 0.12), MAT.headlight(0xffcc88, 0.6));
+  fogL.position.set(2.26, -0.28, 1.12);
+  group.add(fogL);
+  
+  const tailL = mesh(GEO.box(0.09, 0.2, 0.15), MAT.taillight());
+  tailL.position.set(-2.32, -0.06, 1.12);
   group.add(tailL);
-  const tailR = mesh(GEO.box(0.08, 0.18, 0.14), MAT.taillight());
-  tailR.position.set(-2.28, -0.06, -1.08);
+  const tailR = mesh(GEO.box(0.09, 0.2, 0.15), MAT.taillight());
+  tailR.position.set(-2.32, -0.06, -1.12);
   group.add(tailR);
   
   // Roof rails
-  const railL = mesh(GEO.box(3.2, 0.05, 0.08), chrome);
-  railL.position.set(-0.2, 0.62, 1.02);
+  const railL = mesh(GEO.box(3.3, 0.06, 0.09), chrome);
+  railL.position.set(-0.2, 0.66, 1.05);
   group.add(railL);
-  const railR = mesh(GEO.box(3.2, 0.05, 0.08), chrome);
-  railR.position.set(-0.2, 0.62, -1.02);
+  const railR = mesh(GEO.box(3.3, 0.06, 0.09), chrome);
+  railR.position.set(-0.2, 0.66, -1.05);
   group.add(railR);
   
   const wheels = [];
-  const wheelPos = [[-1.62, -0.52, 1.14], [1.62, -0.52, 1.14], [-1.62, -0.52, -1.14], [1.62, -0.52, -1.14]];
-  wheelPos.forEach(pos => { const w = buildWheel(true, 0xcccccc); w.position.set(pos[0], pos[1], pos[2]); group.add(w); wheels.push(w); });
+  const wheelPos = [[-1.66, -0.54, 1.18], [1.66, -0.54, 1.18], [-1.66, -0.54, -1.18], [1.66, -0.54, -1.18]];
+  wheelPos.forEach(pos => { const w = buildPremiumWheel(true, 0xcccccc, false); w.position.set(pos[0], pos[1], pos[2]); group.add(w); wheels.push(w); });
   
   return { group, wheels };
 }
 
-// MERCEDES-BENZ C300 - Luxury sedan
+// MERCEDES-BENZ C300 - BRIGHT GOLD LUXURY SEDAN with distinctive shape
 function buildLuxurySedan(bodyColor) {
   const group = new THREE.Group();
   const paint = MAT.pearlPaint(bodyColor);
+  const goldChrome = MAT.goldChrome();
   const chrome = MAT.chrome();
   const glass = MAT.glass();
+  const carbon = MAT.carbon();
   
-  const body = mesh(GEO.box(4.5, 0.48, 1.92), paint);
-  body.position.y = -0.42;
+  // Sleeker, more aggressive body shape
+  const body = mesh(GEO.box(4.6, 0.48, 1.94), paint);
+  body.position.y = -0.44;
   group.add(body);
   
-  const roof = mesh(GEO.box(3.2, 0.1, 1.72), paint);
-  roof.position.set(-0.15, 0.44, 0);
+  // Distinctive coupe-like roofline
+  const roof = mesh(GEO.box(3.2, 0.09, 1.74), paint);
+  roof.position.set(-0.2, 0.45, 0);
   group.add(roof);
   
-  // Panoramic sunroof
-  const sunroof = mesh(GEO.box(2.2, 0.03, 1.4), MAT.glass());
-  sunroof.position.set(-0.2, 0.52, 0);
+  // Panoramic sunroof with gold tint
+  const sunroof = mesh(GEO.box(2.5, 0.03, 1.4), MAT.glass());
+  sunroof.position.set(-0.25, 0.54, 0);
   group.add(sunroof);
   
-  // Star grille
-  const grille = mesh(GEO.box(0.12, 0.44, 1.7), chrome);
-  grille.position.set(2.32, -0.08, 0);
+  // AMG Panamericana grille
+  const grille = mesh(GEO.box(0.13, 0.48, 1.76), goldChrome);
+  grille.position.set(2.38, -0.06, 0);
   group.add(grille);
   
-  const star = mesh(GEO.sphere(0.045, 16, 16), chrome);
-  star.position.set(2.38, 0.04, 0);
+  // Vertical slats for Panamericana grille
+  for (let i = -0.8; i <= 0.8; i += 0.16) {
+    const slat = mesh(GEO.box(0.02, 0.38, 0.04), chrome);
+    slat.position.set(2.36, -0.05, i);
+    group.add(slat);
+  }
+  
+  // Big Mercedes star
+  const star = mesh(GEO.sphere(0.055, 24, 24), goldChrome);
+  star.position.set(2.44, 0.06, 0);
   group.add(star);
+  const starRing = mesh(GEO.torus(0.065, 0.01, 16, 48), chrome);
+  starRing.position.set(2.44, 0.06, 0);
+  group.add(starRing);
   
-  // LED headlights
-  const headlightL = mesh(GEO.box(0.08, 0.14, 0.38), MAT.headlight(0xffeedd, 0.8));
-  headlightL.position.set(2.28, -0.1, 0.96);
+  // Multi-beam LED headlights with blue accent
+  const headlightL = mesh(GEO.box(0.09, 0.16, 0.42), MAT.headlight(0xfff5e0, 1.0));
+  headlightL.position.set(2.34, -0.08, 1.02);
   group.add(headlightL);
-  const drlL = mesh(GEO.box(0.04, 0.04, 0.32), MAT.headlight(0x88aaff, 0.6));
-  drlL.position.set(2.26, 0.04, 0.96);
-  group.add(drlL);
+  const headlightR = mesh(GEO.box(0.09, 0.16, 0.42), MAT.headlight(0xfff5e0, 1.0));
+  headlightR.position.set(2.34, -0.08, -1.02);
+  group.add(headlightR);
   
-  const tailL = mesh(GEO.box(0.06, 0.15, 0.14), MAT.taillight());
-  tailL.position.set(-2.28, -0.08, 1.02);
+  // Blue DRL signature
+  const drlL = mesh(GEO.box(0.05, 0.05, 0.36), MAT.headlight(0x44aaff, 0.9));
+  drlL.position.set(2.32, 0.08, 1.02);
+  group.add(drlL);
+  const drlR = mesh(GEO.box(0.05, 0.05, 0.36), MAT.headlight(0x44aaff, 0.9));
+  drlR.position.set(2.32, 0.08, -1.02);
+  group.add(drlR);
+  
+  // Signature LED tail lights
+  const tailL = mesh(GEO.box(0.08, 0.18, 0.16), MAT.taillight());
+  tailL.position.set(-2.34, -0.06, 1.08);
   group.add(tailL);
-  const tailR = mesh(GEO.box(0.06, 0.15, 0.14), MAT.taillight());
-  tailR.position.set(-2.28, -0.08, -1.02);
+  const tailR = mesh(GEO.box(0.08, 0.18, 0.16), MAT.taillight());
+  tailR.position.set(-2.34, -0.06, -1.08);
   group.add(tailR);
   
-  // Dual exhaust
-  const exhaustL = mesh(GEO.cyl(0.06, 0.06, 0.18, 16), chrome);
-  exhaustL.position.set(-2.18, -0.48, 0.72);
+  // LED light bar across rear
+  const lightBar = mesh(GEO.box(0.03, 0.04, 1.2), MAT.headlight(0xff3300, 0.6));
+  lightBar.position.set(-2.32, 0.02, 1.1);
+  group.add(lightBar);
+  
+  // Dual exhaust with gold tips
+  const exhaustL = mesh(GEO.cyl(0.07, 0.08, 0.22, 24), goldChrome);
+  exhaustL.position.set(-2.24, -0.48, 0.78);
   exhaustL.rotation.x = Math.PI / 2;
   group.add(exhaustL);
-  const exhaustR = mesh(GEO.cyl(0.06, 0.06, 0.18, 16), chrome);
-  exhaustR.position.set(-2.18, -0.48, -0.72);
+  const exhaustR = mesh(GEO.cyl(0.07, 0.08, 0.22, 24), goldChrome);
+  exhaustR.position.set(-2.24, -0.48, -0.78);
   exhaustR.rotation.x = Math.PI / 2;
   group.add(exhaustR);
   
+  // Rear carbon diffuser
+  const diffuser = mesh(GEO.box(0.05, 0.12, 1.45), carbon);
+  diffuser.position.set(-2.36, -0.52, 0);
+  group.add(diffuser);
+  
+  // Side skirts with gold accent
+  const skirtL = mesh(GEO.box(4.1, 0.05, 0.1), goldChrome);
+  skirtL.position.set(0.05, -0.44, 1.12);
+  group.add(skirtL);
+  const skirtR = mesh(GEO.box(4.1, 0.05, 0.1), goldChrome);
+  skirtR.position.set(0.05, -0.44, -1.12);
+  group.add(skirtR);
+  
+  // Chrome window surround
+  const windowTrim = mesh(GEO.box(3.4, 0.02, 0.06), chrome);
+  windowTrim.position.set(-0.3, 0.28, 1.06);
+  group.add(windowTrim);
+  
+  // Premium wheels
   const wheels = [];
-  const wheelPos = [[-1.58, -0.56, 1.08], [1.58, -0.56, 1.08], [-1.58, -0.56, -1.08], [1.58, -0.56, -1.08]];
-  wheelPos.forEach(pos => { const w = buildWheel(true, 0xc6a84b); w.position.set(pos[0], pos[1], pos[2]); group.add(w); wheels.push(w); });
+  const wheelPos = [[-1.64, -0.58, 1.14], [1.64, -0.58, 1.14], [-1.64, -0.58, -1.14], [1.64, -0.58, -1.14]];
+  wheelPos.forEach(pos => { const w = buildPremiumWheel(true, 0xffdd88, true); w.position.set(pos[0], pos[1], pos[2]); group.add(w); wheels.push(w); });
   
   return { group, wheels };
 }
 
-// LEXUS RX 350 - Luxury SUV (spindle grille)
+// LEXUS RX 350 - BRIGHT CRIMSON RED LUXURY SUV with bold spindle grille
 function buildLuxurySUV(bodyColor) {
   const group = new THREE.Group();
   const paint = MAT.pearlPaint(bodyColor);
+  const goldChrome = MAT.goldChrome();
   const chrome = MAT.chrome();
   const glass = MAT.glass();
+  const carbon = MAT.carbon();
   
-  const body = mesh(GEO.box(4.7, 0.54, 2.08), paint);
-  body.position.y = -0.35;
+  // Bold, muscular SUV body
+  const body = mesh(GEO.box(4.8, 0.58, 2.15), paint);
+  body.position.y = -0.36;
   group.add(body);
   
-  const roof = mesh(GEO.box(3.9, 0.09, 1.96), paint);
-  roof.position.set(0, 0.46, 0);
+  // Floating roof effect
+  const roof = mesh(GEO.box(4.1, 0.1, 2.02), paint);
+  roof.position.set(0.02, 0.48, 0);
   group.add(roof);
   
-  // Signature spindle grille
-  const grille = mesh(GEO.box(0.13, 0.48, 1.72), chrome);
-  grille.position.set(2.44, -0.05, 0);
-  group.add(grille);
+  // Black floating pillars
+  const pillarC = mesh(GEO.box(0.09, 0.52, 0.09), MAT.blackChrome());
+  pillarC.position.set(-1.25, 0.16, 1.12);
+  group.add(pillarC);
   
-  // Mesh pattern
-  for (let i = -0.75; i <= 0.75; i += 0.12) {
-    const bar = mesh(GEO.box(0.04, 0.02, 0.04), chrome);
-    bar.position.set(2.42, -0.05, i);
-    group.add(bar);
+  // Signature spindle grille - larger and more aggressive
+  const grilleUpper = mesh(GEO.box(0.13, 0.32, 1.68), goldChrome);
+  grilleUpper.position.set(2.52, 0.04, 0);
+  group.add(grilleUpper);
+  const grilleLower = mesh(GEO.box(0.12, 0.32, 1.62), goldChrome);
+  grilleLower.position.set(2.52, -0.26, 0);
+  group.add(grilleLower);
+  
+  // Diamond mesh pattern
+  for (let i = -0.75; i <= 0.75; i += 0.1) {
+    for (let j = -0.2; j <= 0.2; j += 0.1) {
+      const diamond = mesh(GEO.sphere(0.018, 8, 8), MAT.metallicPaint(0xffdd88, 0.2));
+      diamond.position.set(2.5, -0.02 + j, i);
+      group.add(diamond);
+    }
   }
   
-  // L-shaped headlights
-  const headlightL = mesh(GEO.box(0.09, 0.15, 0.36), MAT.headlight(0xffeedd, 0.75));
-  headlightL.position.set(2.4, -0.06, 0.94);
-  group.add(headlightL);
-  const drlLL = mesh(GEO.box(0.04, 0.04, 0.28), MAT.headlight(0xaaccff, 0.6));
-  drlLL.position.set(2.38, 0.06, 0.94);
-  group.add(drlLL);
+  // Lexus emblem
+  const emblem = mesh(GEO.sphere(0.048, 20, 20), chrome);
+  emblem.position.set(2.58, 0.08, 0);
+  group.add(emblem);
   
-  const tailL = mesh(GEO.box(0.08, 0.2, 0.14), MAT.taillight());
-  tailL.position.set(-2.4, 0.0, 1.1);
+  // L-shaped triple beam headlights
+  const headlightL = mesh(GEO.box(0.11, 0.17, 0.4), MAT.headlight(0xfff5e0, 1.0));
+  headlightL.position.set(2.48, -0.05, 1.02);
+  group.add(headlightL);
+  const headlightR = mesh(GEO.box(0.11, 0.17, 0.4), MAT.headlight(0xfff5e0, 1.0));
+  headlightR.position.set(2.48, -0.05, -1.02);
+  group.add(headlightR);
+  
+  // Signature L-shaped DRL
+  const drlLL = mesh(GEO.box(0.06, 0.06, 0.32), MAT.headlight(0x88ccff, 0.85));
+  drlLL.position.set(2.46, 0.09, 1.02);
+  group.add(drlLL);
+  const drlLB = mesh(GEO.box(0.05, 0.05, 0.24), MAT.headlight(0x88ccff, 0.75));
+  drlLB.position.set(2.46, -0.18, 1.02);
+  group.add(drlLB);
+  
+  // Bold LED fog lights
+  const fogL = mesh(GEO.box(0.08, 0.08, 0.14), MAT.headlight(0xffcc88, 0.7));
+  fogL.position.set(2.44, -0.34, 1.18);
+  group.add(fogL);
+  
+  // Arrowhead taillights
+  const tailL = mesh(GEO.box(0.1, 0.24, 0.16), MAT.taillight());
+  tailL.position.set(-2.48, 0.04, 1.16);
   group.add(tailL);
-  const tailR = mesh(GEO.box(0.08, 0.2, 0.14), MAT.taillight());
-  tailR.position.set(-2.4, 0.0, -1.1);
+  const tailR = mesh(GEO.box(0.1, 0.24, 0.16), MAT.taillight());
+  tailR.position.set(-2.48, 0.04, -1.16);
   group.add(tailR);
   
   // Chrome window trim
-  const trim = mesh(GEO.box(4.2, 0.02, 0.08), chrome);
-  trim.position.set(0, 0.22, 1.1);
+  const trim = mesh(GEO.box(4.4, 0.03, 0.09), chrome);
+  trim.position.set(0.02, 0.26, 1.16);
   group.add(trim);
   
+  // Roof spoiler
+  const spoiler = mesh(GEO.box(1.7, 0.07, 0.2), paint);
+  spoiler.position.set(-2.25, 0.64, 0);
+  group.add(spoiler);
+  
+  // Side vents
+  const ventL = mesh(GEO.box(0.05, 0.12, 0.08), goldChrome);
+  ventL.position.set(0.85, -0.28, 1.18);
+  group.add(ventL);
+  const ventR = mesh(GEO.box(0.05, 0.12, 0.08), goldChrome);
+  ventR.position.set(0.85, -0.28, -1.18);
+  group.add(ventR);
+  
+  // Premium large wheels
   const wheels = [];
-  const wheelPos = [[-1.7, -0.52, 1.2], [1.7, -0.52, 1.2], [-1.7, -0.52, -1.2], [1.7, -0.52, -1.2]];
-  wheelPos.forEach(pos => { const w = buildWheel(true, 0xc6a84b); w.position.set(pos[0], pos[1], pos[2]); group.add(w); wheels.push(w); });
+  const wheelPos = [[-1.78, -0.54, 1.26], [1.78, -0.54, 1.26], [-1.78, -0.54, -1.26], [1.78, -0.54, -1.26]];
+  wheelPos.forEach(pos => { const w = buildPremiumWheel(true, 0xffdd88, true); w.position.set(pos[0], pos[1], pos[2]); group.add(w); wheels.push(w); });
   
   return { group, wheels };
 }
 
 /* ─────────────────────────────────────────────────────────────
-   ENVIRONMENT SETUP
+   UNIQUE ENVIRONMENT SETUP FOR EACH CAR - BRIGHTER
 ───────────────────────────────────────────────────────────── */
-function buildEnvironment(scene) {
-  scene.background = new THREE.Color(0x0a0a1a);
-  scene.fog = new THREE.FogExp2(0x0a0a1a, 0.0012);
+function buildEnvironment(scene, config) {
+  scene.background = new THREE.Color(config.bgColor);
+  scene.fog = new THREE.FogExp2(config.fogColor, 0.006);
   
+  // Brighter ambient lights
   const ambient = new THREE.AmbientLight(0xffffff, 1.2);
   scene.add(ambient);
-  const ambientFill = new THREE.AmbientLight(0x88aaff, 0.5);
+  const ambientFill = new THREE.AmbientLight(config.lightColor, 0.6);
   scene.add(ambientFill);
   
-  const keyLight = new THREE.DirectionalLight(0xfff5e8, 2.2);
-  keyLight.position.set(5, 7, 5);
+  // Key light - brighter
+  const keyLight = new THREE.DirectionalLight(0xfff8e8, 2.8);
+  keyLight.position.set(5, 8, 6);
   keyLight.castShadow = true;
   keyLight.shadow.mapSize.width = 2048;
   keyLight.shadow.mapSize.height = 2048;
@@ -391,38 +579,91 @@ function buildEnvironment(scene) {
   keyLight.shadow.camera.bottom = -8;
   scene.add(keyLight);
   
-  const fillLight = new THREE.DirectionalLight(0xccddff, 1.0);
+  // Fill light - brighter
+  const fillLight = new THREE.DirectionalLight(config.lightColor, 1.5);
   fillLight.position.set(-3, 5, 4);
   scene.add(fillLight);
   
-  const backLight = new THREE.PointLight(0xffaa77, 0.8);
-  backLight.position.set(0, 3, -7);
-  scene.add(backLight);
+  // Rim light - warmer
+  const rimLight = new THREE.PointLight(0xffaa77, 1.2);
+  rimLight.position.set(0, 2, -6);
+  scene.add(rimLight);
   
-  const frontFill = new THREE.PointLight(0xffccaa, 0.6);
+  // Front fill - brighter
+  const frontFill = new THREE.PointLight(config.lightColor, 1.0);
   frontFill.position.set(0, 1.5, 7);
   scene.add(frontFill);
   
-  // Reflective floor
+  // Colored accent light
+  const accentLight = new THREE.PointLight(config.lightColor, 1.1);
+  accentLight.position.set(2, 2, 3);
+  scene.add(accentLight);
+  
+  // Additional bounce light from below
+  const bounceLight = new THREE.PointLight(0x88aaff, 0.5);
+  bounceLight.position.set(0, -0.5, 0);
+  scene.add(bounceLight);
+  
+  // Particle system
+  const particleCount = 1000;
+  const particleGeo = new THREE.BufferGeometry();
+  const particlePositions = new Float32Array(particleCount * 3);
+  for (let i = 0; i < particleCount; i++) {
+    particlePositions[i * 3] = (Math.random() - 0.5) * 18;
+    particlePositions[i * 3 + 1] = (Math.random() - 0.5) * 6 + 1;
+    particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 12 - 4;
+  }
+  particleGeo.setAttribute("position", new THREE.BufferAttribute(particlePositions, 3));
+  const particleMat = new THREE.PointsMaterial({
+    color: config.particleColor,
+    size: 0.014,
+    transparent: true,
+    opacity: 0.5,
+    blending: THREE.AdditiveBlending,
+  });
+  const particles = new THREE.Points(particleGeo, particleMat);
+  scene.add(particles);
+  
+  // Reflective glossy floor
   const floor = new THREE.Mesh(
     new THREE.PlaneGeometry(18, 14),
-    new THREE.MeshStandardMaterial({ color: 0x1a1a2e, metalness: 0.92, roughness: 0.08, emissive: 0x0a0a1a, emissiveIntensity: 0.05 })
+    new THREE.MeshStandardMaterial({ color: 0x1a1a2e, metalness: 0.96, roughness: 0.05, emissive: config.bgColor, emissiveIntensity: 0.1 })
   );
   floor.rotation.x = -Math.PI / 2;
-  floor.position.y = -0.68;
+  floor.position.y = -0.72;
   floor.receiveShadow = true;
   scene.add(floor);
   
+  // Shadow catcher
   const shadowCatcher = new THREE.Mesh(
     new THREE.PlaneGeometry(8, 6),
-    new THREE.ShadowMaterial({ opacity: 0.4, transparent: true })
+    new THREE.ShadowMaterial({ opacity: 0.55, transparent: true, blur: 1.5 })
   );
   shadowCatcher.rotation.x = -Math.PI / 2;
-  shadowCatcher.position.y = -0.66;
+  shadowCatcher.position.y = -0.7;
   shadowCatcher.receiveShadow = true;
   scene.add(shadowCatcher);
   
-  return { animatables: [] };
+  // Decorative rings
+  const ringMat = new THREE.MeshBasicMaterial({ color: config.particleColor, transparent: true, opacity: 0.12, wireframe: true });
+  const ring1 = new THREE.Mesh(new THREE.TorusGeometry(2.3, 0.02, 48, 120), ringMat);
+  ring1.rotation.x = Math.PI / 2;
+  ring1.position.y = -0.55;
+  scene.add(ring1);
+  
+  const ring2 = new THREE.Mesh(new THREE.TorusGeometry(3.1, 0.015, 48, 140), ringMat);
+  ring2.rotation.z = Math.PI / 3;
+  ring2.rotation.x = Math.PI / 4;
+  ring2.position.y = -0.5;
+  scene.add(ring2);
+  
+  const ring3 = new THREE.Mesh(new THREE.TorusGeometry(1.5, 0.01, 48, 100), ringMat);
+  ring3.rotation.x = Math.PI / 3;
+  ring3.rotation.z = Math.PI / 6;
+  ring3.position.y = -0.5;
+  scene.add(ring3);
+  
+  return { particles, rings: [ring1, ring2, ring3], accentLight, rimLight, fillLight, bounceLight };
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -445,14 +686,15 @@ function ShowroomScene({ car }) {
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     mount.appendChild(renderer.domElement);
     
-    const camera = new THREE.PerspectiveCamera(35, mount.clientWidth / mount.clientHeight, 0.1, 50);
-    camera.position.set(5.5, 2.8, 8);
+    const camera = new THREE.PerspectiveCamera(32, mount.clientWidth / mount.clientHeight, 0.1, 50);
+    camera.position.set(5.8, 2.5, 8.5);
     camera.lookAt(0, 0.2, 0);
     
     let isDragging = false, prevMouse = { x: 0, y: 0 };
-    let spherical = { theta: 0.4, phi: 1.15, radius: 8.2 };
+    let spherical = { theta: 0.35, phi: 1.2, radius: 8.5 };
     const target = new THREE.Vector3(0, 0.2, 0);
-    let autoRotateSpeed = 0.0015;
+    let autoRotateSpeed = 0.0018;
+    let time = 0;
     
     const updateCamera = () => {
       camera.position.set(
@@ -467,15 +709,15 @@ function ShowroomScene({ car }) {
     const onPointerUp = () => { isDragging = false; };
     const onPointerMove = (e) => {
       if (!isDragging) return;
-      const dx = (e.clientX - prevMouse.x) * 0.007;
-      const dy = (e.clientY - prevMouse.y) * 0.005;
+      const dx = (e.clientX - prevMouse.x) * 0.006;
+      const dy = (e.clientY - prevMouse.y) * 0.004;
       spherical.theta -= dx;
-      spherical.phi = Math.max(0.35, Math.min(1.7, spherical.phi + dy));
+      spherical.phi = Math.max(0.4, Math.min(1.6, spherical.phi + dy));
       prevMouse = { x: e.clientX, y: e.clientY };
       updateCamera();
     };
     const onWheel = (e) => {
-      spherical.radius = Math.max(5, Math.min(14, spherical.radius + e.deltaY * 0.008));
+      spherical.radius = Math.max(5.5, Math.min(14, spherical.radius + e.deltaY * 0.007));
       e.preventDefault();
       updateCamera();
     };
@@ -487,7 +729,7 @@ function ShowroomScene({ car }) {
     el.addEventListener('wheel', onWheel, { passive: false });
     
     const scene = new THREE.Scene();
-    buildEnvironment(scene);
+    const env = buildEnvironment(scene, car.sceneConfig);
     
     let carData;
     switch (car.type) {
@@ -513,20 +755,42 @@ function ShowroomScene({ car }) {
     carData.group.castShadow = true;
     scene.add(carData.group);
     
-    let raf, lastTime = 0, elapsed = 0;
+    let raf, lastTime = 0;
     const animate = (now) => {
       raf = requestAnimationFrame(animate);
       const dt = Math.min(0.033, (now - lastTime) / 1000);
       lastTime = now;
-      elapsed += dt;
+      time += dt;
       
       if (!isDragging) spherical.theta += autoRotateSpeed;
       updateCamera();
       
-      carData.group.position.y = Math.sin(elapsed * 1.0) * 0.004;
-      carData.group.rotation.z = Math.sin(elapsed * 0.6) * 0.001;
+      // Floating animation
+      carData.group.position.y = Math.sin(time * 0.9) * 0.006;
+      carData.group.rotation.z = Math.sin(time * 0.5) * 0.0015;
       
-      carData.wheels.forEach(wheel => { wheel.rotation.x += 0.018; });
+      // Wheel rotation
+      carData.wheels.forEach(wheel => { wheel.rotation.x += 0.022; });
+      
+      // Animate particles
+      if (env.particles) {
+        env.particles.rotation.y = time * 0.015;
+        env.particles.rotation.x = Math.sin(time * 0.08) * 0.05;
+      }
+      
+      // Animate rings
+      if (env.rings) {
+        env.rings[0].rotation.z += 0.003;
+        env.rings[1].rotation.x += 0.002;
+        env.rings[1].rotation.y += 0.0015;
+        env.rings[2].rotation.x += 0.0025;
+        env.rings[2].rotation.z += 0.002;
+      }
+      
+      // Pulse accent light
+      if (env.accentLight) env.accentLight.intensity = 0.9 + Math.sin(time * 2) * 0.35;
+      if (env.rimLight) env.rimLight.intensity = 1.0 + Math.cos(time * 1.5) * 0.3;
+      if (env.bounceLight) env.bounceLight.intensity = 0.5 + Math.sin(time * 2.5) * 0.2;
       
       renderer.render(scene, camera);
     };
@@ -570,7 +834,7 @@ export default function Cars() {
   
   useEffect(() => {
     let y = 0, raf;
-    const tick = () => { y = (y + 0.06) % 100; setScanY(y); raf = requestAnimationFrame(tick); };
+    const tick = () => { y = (y + 0.07) % 100; setScanY(y); raf = requestAnimationFrame(tick); };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, []);
@@ -600,6 +864,7 @@ export default function Cars() {
   }, [activeCar, selectCar]);
   
   const accentHex = activeCar.accent;
+  const bgGradient = `radial-gradient(ellipse at 50% 50%, ${accentHex}30 0%, #000 80%)`;
   
   return (
     <section id="cars" style={{ background: "#000", position: "relative", overflow: "hidden", fontFamily: "'Inter', 'Overpass Mono', monospace" }}>
@@ -611,8 +876,7 @@ export default function Cars() {
         @keyframes fadeUp { from { opacity:0; transform:translateY(14px) } to { opacity:1; transform:translateY(0) } }
         @keyframes marquee { from { transform:translateX(0) } to { transform:translateX(-50%) } }
         @keyframes spinCCW { from { transform:translate(-50%,-50%) rotate(0) } to { transform:translate(-50%,-50%) rotate(-360deg) } }
-        @keyframes pulse { 0%,100% { opacity:0.08 } 50% { opacity:0.18 } }
-        @keyframes shimmer { 0% { background-position: -200% 0 } 100% { background-position: 200% 0 } }
+        @keyframes pulse { 0%,100% { opacity:0.1 } 50% { opacity:0.3 } }
         
         .car-wrap { max-width:1400px; margin:0 auto; }
         
@@ -669,7 +933,7 @@ export default function Cars() {
         @media(max-width:900px){ .car-viewer { border:none; border-top:1px solid rgba(255,255,255,0.05); min-height:auto; }
           .car-viewer.hidden { display:none; } }
         
-        .car-canvas { position:relative; flex:1; min-height:480px; overflow:hidden; background:#000; border-radius:4px; }
+        .car-canvas { position:relative; flex:1; min-height:480px; overflow:hidden; border-radius:4px; }
         @media(max-width:600px){ .car-canvas { min-height:60vw; } }
         
         .car-canvas-bg { position:absolute; inset:0; z-index:1; pointer-events:none; transition:background 0.7s ease; }
@@ -691,7 +955,7 @@ export default function Cars() {
           border:1px solid rgba(255,255,255,0.06); padding:5px 10px; border-radius:2px; }
         .car-hud-dot { width:4px; height:4px; border-radius:50%; animation:pulse 2s ease-in-out infinite; }
         .car-hud-id { position:absolute; top:12px; right:12px; z-index:20;
-          font-family:'Playfair Display',serif; font-size:26px; font-style:italic;
+          font-family:'Playfair Display',serif; font-size:28px; font-style:italic;
           color:rgba(255,255,255,0.04); pointer-events:none; letter-spacing:-0.03em; }
         .car-hud-drag { position:absolute; bottom:12px; left:12px; z-index:20;
           font-size:5.5px; letter-spacing:0.3em; text-transform:uppercase;
@@ -702,7 +966,7 @@ export default function Cars() {
         .car-hud-model { font-family:'Playfair Display',serif; font-style:italic; font-size:clamp(12px,1.5vw,17px); }
         
         .car-reticle { position:absolute; top:50%; left:50%; pointer-events:none; z-index:8;
-          animation:spinCCW 30s linear infinite; opacity:0.05; }
+          animation:spinCCW 30s linear infinite; opacity:0.06; }
         
         .car-detail { padding:20px 24px 24px; border-top:1px solid rgba(255,255,255,0.05); background:#000; position:relative; z-index:10; }
         .car-detail::before { content:''; position:absolute; top:0; left:0; right:0; height:1px;
@@ -840,29 +1104,27 @@ export default function Cars() {
         
         <div className={`car-viewer${mobileTab === "list" ? " hidden" : ""}`}>
           <div className="car-canvas">
-            <div className="car-canvas-bg" style={{
-              background: `radial-gradient(ellipse at 50% 60%, ${accentHex}20 0%, transparent 70%)`
-            }} />
+            <div className="car-canvas-bg" style={{ background: bgGradient }} />
             
             <div className="car-scan-beam" style={{
               top: `${scanY}%`,
-              "--accent-beam": `${accentHex}18`
+              "--accent-beam": `${accentHex}25`
             }} />
             
             {[["tl"], ["br"], ["tr"], ["bl"]].map(([pos]) => (
               <svg key={pos} className={`car-corner ${pos}`} width="44" height="44" viewBox="0 0 48 48" fill="none"
-                style={{ opacity: 0.3, pointerEvents: "none" }}>
-                <path d="M0 48L0 0L48 0" stroke={accentHex} strokeWidth="0.8" fill="none" />
-                <circle cx="0" cy="0" r="2.5" fill={accentHex} opacity="0.7" />
+                style={{ opacity: 0.35, pointerEvents: "none" }}>
+                <path d="M0 48L0 0L48 0" stroke={accentHex} strokeWidth="0.9" fill="none" />
+                <circle cx="0" cy="0" r="2.5" fill={accentHex} opacity="0.8" />
               </svg>
             ))}
             
             <svg className="car-reticle" width="50" height="50" viewBox="0 0 70 70" fill="none">
-              <circle cx="35" cy="35" r="30" stroke={accentHex} strokeWidth="0.6" strokeDasharray="3 5" />
+              <circle cx="35" cy="35" r="30" stroke={accentHex} strokeWidth="0.7" strokeDasharray="3 5" />
               {[0, 90, 180, 270].map(a => (
                 <line key={a}
                   x1="35" y1="3" x2="35" y2="10"
-                  stroke={accentHex} strokeWidth="0.8"
+                  stroke={accentHex} strokeWidth="0.9"
                   transform={`rotate(${a} 35 35)`} />
               ))}
             </svg>
@@ -874,7 +1136,7 @@ export default function Cars() {
             <div className="car-fade-b" />
             <div className="car-fade-l" />
             
-            <div className="car-hud-tl" style={{ color: accentHex, borderColor: `${accentHex}30` }}>
+            <div className="car-hud-tl" style={{ color: accentHex, borderColor: `${accentHex}40` }}>
               <div className="car-hud-dot" style={{ background: accentHex }} />
               Interactive 3D · Drag to Rotate
             </div>
@@ -882,7 +1144,7 @@ export default function Cars() {
             <div className="car-hud-drag">↺ Drag · Scroll · ↑↓ Keys</div>
             <div className="car-hud-name">
               <div className="car-hud-brand">{activeCar.brand}</div>
-              <div className="car-hud-model" style={{ color: `${accentHex}aa` }}>{activeCar.model}</div>
+              <div className="car-hud-model" style={{ color: `${accentHex}cc` }}>{activeCar.model}</div>
             </div>
           </div>
           
@@ -903,12 +1165,12 @@ export default function Cars() {
               </div>
               <a href={WA_MSG(activeCar.brand, activeCar.model)} target="_blank" rel="noopener noreferrer"
                 className="car-d-cta"
-                style={{ background: accentHex, boxShadow: `0 4px 20px ${accentHex}33` }}>
+                style={{ background: accentHex, boxShadow: `0 4px 20px ${accentHex}66` }}>
                 <span>💬</span> Get Price
               </a>
             </div>
             
-            <div className="car-specs" style={{ borderColor: `${accentHex}22` }}>
+            <div className="car-specs" style={{ borderColor: `${accentHex}33` }}>
               {activeCar.specs.map((s, i) => (
                 <div key={i} className="car-spec">
                   <div className="car-spec-icon">{SPEC_ICONS[i]}</div>
@@ -921,7 +1183,7 @@ export default function Cars() {
             <div className="car-btns">
               <a href={WA_MSG(activeCar.brand, activeCar.model)} target="_blank" rel="noopener noreferrer"
                 className="car-btn-primary"
-                style={{ background: `linear-gradient(135deg, ${accentHex} 0%, ${accentHex}cc 100%)` }}>
+                style={{ background: `linear-gradient(135deg, ${accentHex} 0%, ${accentHex}dd 100%)` }}>
                 <span>💬</span>
                 Enquire on WhatsApp
               </a>
@@ -935,7 +1197,7 @@ export default function Cars() {
         </div>
       </div>
       
-      {/* Call to Action Banner - Other Vehicles Available */}
+      {/* Call to Action Banner */}
       <div className="car-wa-banner">
         <div className="car-wa-banner-text">
           <div className="car-wa-icon">🚗💬</div>
@@ -953,9 +1215,9 @@ export default function Cars() {
         <div className="car-marquee">
           {[...Array(3)].flatMap((_, idx) =>
             ["🇳🇬 Hilux | #1 Pickup", "🇳🇬 Corolla | Best-Selling Sedan", "🇳🇬 CR-V | Family SUV", 
-             "🇳🇬 C300 | Executive Luxury", "🇳🇬 RX 350 | Premium Choice", "📍 Nationwide Delivery",
+             "🇳🇬 C300 | Gold Edition", "🇳🇬 RX 350 | Crimson Red", "📍 Nationwide Delivery",
              "✅ Quality Guaranteed", "💰 Best Prices in Nigeria"].map((item, i) => (
-              <span key={`${item}-${idx}-${i}`} className="car-marquee-item" style={{ color: `${accentHex}66` }}>
+              <span key={`${item}-${idx}-${i}`} className="car-marquee-item" style={{ color: `${accentHex}88` }}>
                 {item} &nbsp;·
               </span>
             ))

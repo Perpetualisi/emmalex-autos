@@ -2,12 +2,23 @@ import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 
 /* ══════════════════════════════════════════════════
-   CONSTANTS
+   CONSTANTS - All WhatsApp messages go to this number
 ══════════════════════════════════════════════════ */
 const WA_NUMBER = "2347034627308";
 const WA_URL = `https://wa.me/${WA_NUMBER}`;
-const WA_MSG = (name, message) => 
-  `${WA_URL}?text=${encodeURIComponent(`Hello Emmalex! My name is ${name}. ${message}`)}`;
+const WA_MSG = (name, email, phone, service, message) => {
+  let fullMessage = `*NEW INQUIRY FROM EMMALEX WEBSITE*%0A%0A`;
+  fullMessage += `*Name:* ${name || "Not provided"}%0A`;
+  fullMessage += `*Email:* ${email || "Not provided"}%0A`;
+  fullMessage += `*Phone:* ${phone || "Not provided"}%0A`;
+  fullMessage += `*Service:* ${service}%0A`;
+  fullMessage += `*Message:* ${message || "No message provided"}%0A%0A`;
+  fullMessage += `*Sent from Emmalex Nigeria (Port Harcourt)*`;
+  return `${WA_URL}?text=${fullMessage}`;
+};
+
+/* Quick contact message */
+const WA_QUICK = (subject) => `${WA_URL}?text=${encodeURIComponent(`Hello Emmalex! I'm interested in ${subject}. Please share more details.`)}`;
 
 /* ══════════════════════════════════════════════════
    ENHANCED 3D MATERIALS
@@ -428,9 +439,13 @@ function ContactScene() {
     animate();
 
     const resizeObserver = new ResizeObserver(() => {
-      renderer.setSize(mount.clientWidth, mount.clientHeight);
-      camera.aspect = mount.clientWidth / mount.clientHeight;
-      camera.updateProjectionMatrix();
+      if (rendererRef.current && camera) {
+        const width = mount.clientWidth;
+        const height = mount.clientHeight;
+        rendererRef.current.setSize(width, height);
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+      }
     });
     resizeObserver.observe(mount);
 
@@ -498,6 +513,7 @@ export default function Contact() {
   });
   const [submitted, setSubmitted] = useState(false);
   const [hoveredCard, setHoveredCard] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     let y = 20, raf;
@@ -512,16 +528,41 @@ export default function Contact() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const waMessage = `I'm interested in ${formData.service}. ${formData.message}`;
-    window.open(WA_MSG(formData.name || "Customer", waMessage), "_blank");
+    setIsSubmitting(true);
+    
+    // Build WhatsApp message with all form data
+    const waUrl = WA_MSG(
+      formData.name,
+      formData.email,
+      formData.phone,
+      formData.service,
+      formData.message
+    );
+    
+    // Open WhatsApp in new tab
+    window.open(waUrl, "_blank");
+    
+    // Show success message
     setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3000);
+    setIsSubmitting(false);
+    
+    // Reset form
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      service: "vehicles",
+      message: "",
+    });
+    
+    // Hide success message after 4 seconds
+    setTimeout(() => setSubmitted(false), 4000);
   };
 
   const contactCards = [
-    { icon: "📍", title: "Visit Us", details: ["Lagos, Nigeria", "Victoria Island, Lagos", "Abuja, FCT"], accent: "#C6A84B" },
-    { icon: "📞", title: "Call Us", details: ["+234 703 462 7308", "+234 802 345 6789", "Mon-Fri: 9am - 6pm"], accent: "#5599FF" },
-    { icon: "✉️", title: "Email Us", details: ["info@emmalexautos.com", "sales@emmalexautos.com", "support@emmalexautos.com"], accent: "#F5C518" },
+    { icon: "📍", title: "Visit Us", details: ["Port Harcourt, Nigeria", "Rumuokwurushi, PH", "Mon-Fri: 9am - 6pm"], accent: "#C6A84B", action: null },
+    { icon: "📞", title: "Call Us", details: ["+234 703 462 7308", "+234 802 345 6789", "24/7 Customer Support"], accent: "#5599FF", action: "tel:+2347034627308" },
+    { icon: "✉️", title: "WhatsApp", details: ["Fastest Response", "Send Documents", "Video Call Available"], accent: "#25D366", action: WA_URL },
   ];
 
   return (
@@ -533,10 +574,31 @@ export default function Contact() {
     }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Overpass+Mono:wght@300;400;600&display=swap');
-        @keyframes contactReticle { from{transform:translate(-50%,-50%) rotate(0deg)} to{transform:translate(-50%,-50%) rotate(360deg)} }
-        @keyframes contactFadeUp { to{opacity:1;transform:translateY(0)} }
-        @keyframes contactScanMove { from{background-position:0 -200px} to{background-position:0 100%} }
-        @keyframes contactPulse { 0%,100%{opacity:0.6;transform:scale(1)} 50%{opacity:1;transform:scale(1.05)} }
+        
+        @keyframes contactReticle { 
+          from{transform:translate(-50%,-50%) rotate(0deg)} 
+          to{transform:translate(-50%,-50%) rotate(360deg)} 
+        }
+        
+        @keyframes contactFadeUp { 
+          from{opacity:0;transform:translateY(20px)} 
+          to{opacity:1;transform:translateY(0)} 
+        }
+        
+        @keyframes contactScanMove { 
+          0%{background-position:0 -200px} 
+          100%{background-position:0 100%} 
+        }
+        
+        @keyframes contactPulse { 
+          0%,100%{opacity:0.6;transform:scale(1)} 
+          50%{opacity:1;transform:scale(1.05)} 
+        }
+
+        #contact {
+          -webkit-overflow-scrolling: touch;
+          overflow-x: hidden;
+        }
 
         #contact::before {
           content:''; position:absolute; inset:0; pointer-events:none; z-index:0;
@@ -563,13 +625,23 @@ export default function Contact() {
           position:relative; z-index:4;
           text-align:center;
         }
-        @media(max-width:860px){ .contact-header{ padding:80px 5% 30px; } }
+        
+        @media(max-width:860px){ 
+          .contact-header{ padding:60px 5% 30px; } 
+        }
+        
+        @media(max-width:480px){ 
+          .contact-header{ padding:40px 20px 25px; } 
+        }
 
         .contact-eyebrow {
           display:flex; align-items:center; justify-content:center; gap:10px;
           margin-bottom:16px;
+          flex-wrap:wrap;
         }
+        
         .contact-eyebrow-bar { width:24px; height:2px; background:#C6A84B; border-radius:2px; }
+        
         .contact-eyebrow-txt {
           font-size:8px; font-weight:700; letter-spacing:0.5em;
           text-transform:uppercase; color:#C6A84B;
@@ -577,16 +649,22 @@ export default function Contact() {
 
         .contact-title {
           font-family:'DM Serif Display',serif;
-          font-size:clamp(38px,5.5vw,72px);
+          font-size:clamp(32px,5.5vw,72px);
           font-weight:400; line-height:1.05;
           letter-spacing:-0.02em; color:#fff;
         }
+        
         .contact-title em { font-style:italic; color:#C6A84B; }
 
         .contact-sub {
           font-size:10.5px; color:rgba(255,255,255,0.28);
           max-width:580px; margin:20px auto 0;
           line-height:1.8; letter-spacing:0.04em;
+          padding:0 16px;
+        }
+        
+        @media(max-width:480px){
+          .contact-sub{ font-size:9px; line-height:1.6; }
         }
 
         .contact-grid {
@@ -597,8 +675,13 @@ export default function Contact() {
           padding:40px 7% 80px;
           position:relative; z-index:4;
         }
-        @media(max-width:860px){
-          .contact-grid{ grid-template-columns:1fr!important; gap:32px!important; padding:20px 5% 60px!important; }
+        
+        @media(max-width:900px){
+          .contact-grid{ grid-template-columns:1fr !important; gap:32px !important; padding:20px 5% 60px !important; }
+        }
+        
+        @media(max-width:480px){
+          .contact-grid{ gap:24px !important; padding:20px 16px 50px !important; }
         }
 
         .contact-canvas-wrap {
@@ -608,8 +691,14 @@ export default function Contact() {
           overflow:hidden;
           box-shadow:0 20px 40px rgba(0,0,0,0.5);
         }
-        @media(max-width:860px){ .contact-canvas-wrap{ height:420px!important; } }
-        @media(max-width:480px){ .contact-canvas-wrap{ height:320px!important; } }
+        
+        @media(max-width:860px){ 
+          .contact-canvas-wrap{ height:420px !important; } 
+        }
+        
+        @media(max-width:480px){ 
+          .contact-canvas-wrap{ height:320px !important; } 
+        }
 
         .contact-canvas-wrap::before {
           content:''; position:absolute; inset:0; z-index:5; pointer-events:none;
@@ -626,18 +715,30 @@ export default function Contact() {
           display:flex; align-items:center; gap:8px;
           border-radius:2px;
         }
+        
+        @media(max-width:480px){
+          .canvas-hud-badge{ top:12px; right:12px; padding:4px 10px; font-size:6px; }
+        }
+        
         .canvas-hud-dot {
           width:5px; height:5px; border-radius:50%;
           animation:contactPulse 2s ease-in-out infinite;
         }
 
-        /* Form Styles */
+        /* Form Styles - Mobile Stable */
         .contact-form {
           background:rgba(0,0,0,0.85);
           border:1px solid rgba(255,255,255,0.04);
-          padding:clamp(24px,4vw,40px);
+          padding:clamp(20px,4vw,40px);
           position:relative;
+          width:100%;
+          box-sizing:border-box;
         }
+        
+        @media(max-width:480px){
+          .contact-form{ padding:24px 20px; }
+        }
+        
         .contact-form::before {
           content:''; position:absolute; top:0; left:0; right:0;
           height:1px;
@@ -646,28 +747,49 @@ export default function Contact() {
         }
 
         .form-group {
-          margin-bottom:24px;
+          margin-bottom:20px;
+          width:100%;
         }
+        
+        @media(max-width:480px){
+          .form-group{ margin-bottom:16px; }
+        }
+        
         .form-group label {
           display:block;
           font-size:7.5px;
           letter-spacing:0.45em;
           text-transform:uppercase;
           color:rgba(255,255,255,0.4);
-          margin-bottom:10px;
+          margin-bottom:8px;
         }
+        
         .form-group input,
         .form-group select,
         .form-group textarea {
           width:100%;
           background:rgba(255,255,255,0.03);
           border:1px solid rgba(255,255,255,0.08);
-          padding:14px 16px;
+          padding:12px 14px;
           font-family:'Overpass Mono',monospace;
           font-size:10px;
           color:#fff;
           transition:all 0.3s;
+          box-sizing:border-box;
+          -webkit-appearance:none;
+          appearance:none;
+          border-radius:0;
         }
+        
+        @media(max-width:480px){
+          .form-group input,
+          .form-group select,
+          .form-group textarea {
+            padding:10px 12px;
+            font-size:11px;
+          }
+        }
+        
         .form-group input:focus,
         .form-group select:focus,
         .form-group textarea:focus {
@@ -675,16 +797,22 @@ export default function Contact() {
           border-color:#C6A84B;
           background:rgba(198,168,75,0.05);
         }
+        
         .form-group input::placeholder,
         .form-group textarea::placeholder {
           color:rgba(255,255,255,0.2);
+        }
+        
+        select option {
+          background:#000;
+          color:#fff;
         }
 
         .submit-btn {
           width:100%;
           background:#C6A84B;
           border:none;
-          padding:16px;
+          padding:14px;
           font-family:'Overpass Mono',monospace;
           font-size:8.5px;
           font-weight:600;
@@ -694,25 +822,41 @@ export default function Contact() {
           cursor:pointer;
           transition:all 0.3s;
           margin-top:8px;
+          -webkit-appearance:none;
+          appearance:none;
         }
-        .submit-btn:hover {
-          filter:brightness(1.15);
-          transform:translateY(-2px);
-          box-shadow:0 8px 28px rgba(198,168,75,0.3);
+        
+        @media(max-width:480px){
+          .submit-btn{ padding:12px; font-size:8px; }
+        }
+        
+        .submit-btn:active {
+          transform:scale(0.98);
+        }
+        
+        .submit-btn:disabled {
+          opacity:0.6;
+          cursor:not-allowed;
+          transform:none;
         }
 
         .success-message {
-          background:rgba(37,211,102,0.15);
+          background:rgba(37,211,102,0.12);
           border:1px solid rgba(37,211,102,0.3);
-          padding:16px;
+          padding:12px 16px;
           text-align:center;
-          margin-bottom:24px;
+          margin-bottom:20px;
           font-size:9px;
           letter-spacing:0.2em;
           color:#25D366;
+          animation:contactFadeUp 0.3s ease;
+        }
+        
+        @media(max-width:480px){
+          .success-message{ padding:10px 12px; font-size:8px; margin-bottom:16px; }
         }
 
-        /* Contact Cards */
+        /* Contact Cards - Mobile Optimized */
         .contact-cards {
           display:grid;
           grid-template-columns:repeat(3,1fr);
@@ -720,38 +864,72 @@ export default function Contact() {
           background:rgba(255,255,255,0.04);
           margin-top:40px;
         }
-        @media(max-width:860px){ .contact-cards{ grid-template-columns:1fr!important; gap:1px; margin-top:32px; } }
+        
+        @media(max-width:860px){ 
+          .contact-cards{ grid-template-columns:1fr !important; gap:1px; margin-top:32px; } 
+        }
 
         .contact-card {
           background:rgba(0,0,0,0.92);
-          padding:clamp(24px,3vw,32px);
+          padding:clamp(20px,3vw,32px);
           position:relative;
           transition:all 0.3s;
           cursor:pointer;
+          width:100%;
+          box-sizing:border-box;
         }
-        .contact-card:hover {
-          background:rgba(0,0,0,0.98);
-          transform:translateY(-4px);
+        
+        @media(max-width:480px){
+          .contact-card{ padding:20px; }
         }
+        
+        @media(hover:hover){
+          .contact-card:hover {
+            background:rgba(0,0,0,0.98);
+            transform:translateY(-4px);
+          }
+        }
+        
+        .contact-card:active {
+          transform:scale(0.99);
+        }
+        
         .contact-card-icon {
-          font-size:32px;
-          margin-bottom:16px;
+          font-size:28px;
+          margin-bottom:12px;
         }
+        
+        @media(max-width:480px){
+          .contact-card-icon{ font-size:24px; margin-bottom:10px; }
+        }
+        
         .contact-card-title {
           font-family:'DM Serif Display',serif;
-          font-size:18px;
+          font-size:16px;
           color:#fff;
-          margin-bottom:16px;
+          margin-bottom:12px;
         }
+        
+        @media(max-width:480px){
+          .contact-card-title{ font-size:15px; margin-bottom:10px; }
+        }
+        
         .contact-card-detail {
-          font-size:9px;
-          line-height:1.9;
+          font-size:8.5px;
+          line-height:1.8;
           color:rgba(255,255,255,0.35);
           letter-spacing:0.03em;
         }
-        .contact-card-detail div {
-          margin-bottom:6px;
+        
+        @media(max-width:480px){
+          .contact-card-detail{ font-size:8px; line-height:1.6; }
         }
+        
+        .contact-card-detail div {
+          margin-bottom:4px;
+          word-break:break-word;
+        }
+        
         .contact-card-accent-line {
           position:absolute;
           top:0;
@@ -762,47 +940,65 @@ export default function Contact() {
           opacity:0;
           transition:opacity 0.3s;
         }
-        .contact-card:hover .contact-card-accent-line {
-          opacity:0.6;
+        
+        @media(hover:hover){
+          .contact-card:hover .contact-card-accent-line {
+            opacity:0.6;
+          }
         }
 
+        /* WhatsApp Banner - Mobile Stable */
         .whatsapp-banner {
           background:linear-gradient(135deg,#1a1a2e,#0a0a1a);
           border:1px solid rgba(198,168,75,0.15);
           border-radius:8px;
           margin:0 5% 60px;
-          padding:24px 32px;
+          padding:20px 28px;
           display:flex;
           align-items:center;
           justify-content:space-between;
           flex-wrap:wrap;
-          gap:20px;
+          gap:16px;
           position:relative;
           z-index:4;
         }
-        @media(max-width:700px){ .whatsapp-banner{ flex-direction:column; text-align:center; margin:0 5% 40px; padding:24px; } }
+        
+        @media(max-width:700px){ 
+          .whatsapp-banner{ flex-direction:column; text-align:center; margin:0 5% 40px; padding:20px; } 
+        }
+        
+        @media(max-width:480px){ 
+          .whatsapp-banner{ margin:0 16px 40px; padding:18px; } 
+        }
 
         .whatsapp-banner-icon {
-          font-size:38px;
+          font-size:32px;
         }
+        
+        @media(max-width:480px){
+          .whatsapp-banner-icon{ font-size:28px; }
+        }
+        
         .whatsapp-banner-title {
           font-family:'DM Serif Display',serif;
-          font-size:clamp(16px,2.2vw,22px);
+          font-size:clamp(15px,2.2vw,22px);
           font-weight:400;
         }
+        
         .whatsapp-banner-sub {
-          font-size:7.5px;
+          font-size:7px;
           letter-spacing:0.35em;
           text-transform:uppercase;
           color:rgba(255,255,255,0.4);
           margin-top:4px;
         }
+        
         .whatsapp-banner-btn {
           background:#25D366;
           color:#000;
           border:none;
-          padding:12px 28px;
-          font-size:8.5px;
+          padding:10px 24px;
+          font-size:8px;
           font-weight:700;
           letter-spacing:0.35em;
           text-transform:uppercase;
@@ -810,17 +1006,34 @@ export default function Contact() {
           border-radius:4px;
           display:inline-flex;
           align-items:center;
-          gap:10px;
+          gap:8px;
           transition:all 0.3s;
+          -webkit-tap-highlight-color:transparent;
         }
-        .whatsapp-banner-btn:hover {
-          transform:translateY(-2px);
-          filter:brightness(1.08);
+        
+        @media(max-width:480px){
+          .whatsapp-banner-btn{ padding:10px 20px; font-size:7.5px; }
+        }
+        
+        .whatsapp-banner-btn:active {
+          transform:scale(0.97);
         }
 
         .contact-progress {
           position:absolute; bottom:0; left:0; right:0;
           height:1px; background:rgba(255,255,255,0.04); z-index:10;
+        }
+        
+        /* Fix for mobile viewport stability */
+        input, select, textarea, button {
+          -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Prevent zoom on input focus for iOS */
+        @media(max-width:480px){
+          input, select, textarea {
+            font-size:16px;
+          }
         }
       `}</style>
 
@@ -861,7 +1074,7 @@ export default function Contact() {
             <div className="canvas-hud-dot" style={{ background: "#C6A84B" }} />
             Live 3D · Let's Connect
           </div>
-          <div style={{ position: "absolute", bottom: 24, right: 24, zIndex: 8, fontFamily: "'DM Serif Display',serif", fontStyle: "italic", fontSize: 12, color: "rgba(255,255,255,0.18)" }}>
+          <div style={{ position: "absolute", bottom: 20, right: 20, zIndex: 8, fontFamily: "'DM Serif Display',serif", fontStyle: "italic", fontSize: 11, color: "rgba(255,255,255,0.12)" }}>
             Send a message
           </div>
         </div>
@@ -874,9 +1087,9 @@ export default function Contact() {
             </div>
           )}
           
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} noValidate>
             <div className="form-group">
-              <label>Full Name</label>
+              <label>Full Name *</label>
               <input
                 type="text"
                 name="name"
@@ -899,19 +1112,20 @@ export default function Contact() {
             </div>
             
             <div className="form-group">
-              <label>Phone Number</label>
+              <label>Phone Number *</label>
               <input
                 type="tel"
                 name="phone"
                 placeholder="+234 XXX XXX XXXX"
                 value={formData.phone}
                 onChange={handleChange}
+                required
               />
             </div>
             
             <div className="form-group">
-              <label>I'm interested in</label>
-              <select name="service" value={formData.service} onChange={handleChange}>
+              <label>I'm interested in *</label>
+              <select name="service" value={formData.service} onChange={handleChange} required>
                 <option value="vehicles">Vehicles (Cars, SUVs, Trucks)</option>
                 <option value="realestate">Real Estate (Properties)</option>
                 <option value="equipment">Equipment (Construction Machinery)</option>
@@ -921,7 +1135,7 @@ export default function Contact() {
             </div>
             
             <div className="form-group">
-              <label>Message</label>
+              <label>Message *</label>
               <textarea
                 name="message"
                 rows="4"
@@ -932,14 +1146,14 @@ export default function Contact() {
               />
             </div>
             
-            <button type="submit" className="submit-btn">
-              Send Message
+            <button type="submit" className="submit-btn" disabled={isSubmitting}>
+              {isSubmitting ? "Sending..." : "Send Message"}
             </button>
           </form>
         </div>
       </div>
 
-      {/* Contact Cards */}
+      {/* Contact Cards - All lead to WhatsApp on click */}
       <div className="contact-cards" style={{ maxWidth: "1380px", margin: "0 auto", padding: "0 5%" }}>
         {contactCards.map((card, idx) => (
           <div 
@@ -948,6 +1162,15 @@ export default function Contact() {
             style={{ "--accent": card.accent }}
             onMouseEnter={() => setHoveredCard(idx)}
             onMouseLeave={() => setHoveredCard(null)}
+            onClick={() => {
+              if (card.action === "tel:+2347034627308") {
+                window.location.href = "tel:+2347034627308";
+              } else if (card.action === WA_URL) {
+                window.open(WA_URL, "_blank");
+              } else if (card.title === "Visit Us") {
+                window.open(WA_QUICK("visiting your office location"), "_blank");
+              }
+            }}
           >
             <div className="contact-card-accent-line" style={{ opacity: hoveredCard === idx ? 0.6 : 0 }} />
             <div className="contact-card-icon">{card.icon}</div>
@@ -970,7 +1193,13 @@ export default function Contact() {
             <div className="whatsapp-banner-sub">Chat with our team directly on WhatsApp</div>
           </div>
         </div>
-        <a href={WA_URL} target="_blank" rel="noopener noreferrer" className="whatsapp-banner-btn">
+        <a 
+          href={WA_URL} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="whatsapp-banner-btn"
+          onClick={(e) => e.stopPropagation()}
+        >
           <span>📱</span> Start WhatsApp Chat
         </a>
       </div>
